@@ -1,0 +1,5 @@
+pyserial
+tk
+matplotlib
+pandas
+datetime
