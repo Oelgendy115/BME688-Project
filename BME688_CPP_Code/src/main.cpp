@@ -15,8 +15,10 @@ Bme68x sensors[NUM_SENSORS];
 bme68xData sensorData[NUM_SENSORS] = {0};
 commMux communicationSetups[NUM_SENSORS];
 
-uint8_t currentHeaterProfileIndex = 0;
-uint8_t buttonOneValue = 1;
+// Change from uint8_t to int for unbounded label tag
+int buttonOneValue = 1;
+
+uint8_t currentHeaterProfileIndex = 1;
 uint32_t lastLogged = 0;
 
 bool button1State = false;
@@ -33,6 +35,14 @@ bool dataCollectionStarted = false;
 unsigned long lastDataSendTime = 0;
 bool firstDataSent = false;
 unsigned long dataInterval = 1000; // Default 1 second
+
+// A 2D table with grouped layouts for when both buttons are pressed
+static const uint8_t heaterProfileAssignmentsTable[4][NUM_SENSORS] = {
+    {0, 0, 1, 1, 2, 2, 3, 3},  // default
+    {3, 3, 0, 0, 1, 1, 2, 2},
+    {2, 2, 3, 3, 0, 0, 1, 1},
+    {1, 1, 2, 2, 3, 3, 0, 0}
+};
 
 // ------------------------------------------------------------
 // setup()
@@ -59,7 +69,6 @@ void setup(void)
     initializeDutyCycleProfiles();
 
     // Optionally initialize sensors' duty-cycle states
-    // (If you actually need scanning vs. sleeping logic)
     initializeSensorDutyCycles();
 
     // 0->heater_354, 1->heater_354,
@@ -181,52 +190,73 @@ void handleSerialCommands()
 // ------------------------------------------------------------
 void handleButtonPresses()
 {
-    unsigned long currentTime = millis();
-    
-    // Handle Button 1
+    unsigned long now = millis();
+
     bool readingButton1 = (digitalRead(BUTTON_PIN1) == LOW);
     if (readingButton1 != lastButton1State) {
-        lastDebounceTime1 = currentTime;
+        lastDebounceTime1 = now;
     }
-    if ((currentTime - lastDebounceTime1) > DEBOUNCE_DELAY) {
-        if (readingButton1 && !button1State) {
-            // Increments "buttonOneValue" from 1..4, then cycles
-            buttonOneValue++;
-            if (buttonOneValue > 4) {
-                buttonOneValue = 1;
-            }
-        }
+    if ((now - lastDebounceTime1) > DEBOUNCE_DELAY) {
         button1State = readingButton1;
     }
     lastButton1State = readingButton1;
 
-    // Handle Button 2
     bool readingButton2 = (digitalRead(BUTTON_PIN2) == LOW);
     if (readingButton2 != lastButton2State) {
-        lastDebounceTime2 = currentTime;
+        lastDebounceTime2 = now;
     }
-    if ((currentTime - lastDebounceTime2) > DEBOUNCE_DELAY) {
-        if (readingButton2 && !button2State) {
-            // Example: cycle between the 4 profiles in code
-            currentHeaterProfileIndex++;
-            if (currentHeaterProfileIndex > 3) {
-                currentHeaterProfileIndex = 0;
-            }
-            for (uint8_t i = 0; i < NUM_SENSORS; i++) {
-                if (!setHeaterProfile(currentHeaterProfileIndex, sensors[i])) {
-                    Serial.println("ERROR: Failed to set heater profile for sensor " + String(i));
-                    errLeds();
-                }
-                sensors[i].setOpMode(BME68X_SEQUENTIAL_MODE);
-                if (sensors[i].checkStatus() == BME68X_ERROR) {
-                    Serial.println("ERROR: Error setting operation mode for sensor " + String(i));
-                    errLeds();
-                }
-            }
-        }
+    if ((now - lastDebounceTime2) > DEBOUNCE_DELAY) {
         button2State = readingButton2;
     }
     lastButton2State = readingButton2;
+
+    static bool prevBothPressed = false;
+    bool bothPressedNow = button1State && button2State;
+
+    // If both become pressed in this iteration
+    if (bothPressedNow && !prevBothPressed) {
+        cycleHeaterProfileAssignment();
+    }
+    else if (!bothPressedNow) {
+        // Single-press logic
+        static bool prevButton1 = false;
+        static bool prevButton2 = false;
+        bool button1JustPressed = (button1State && !prevButton1);
+        bool button2JustPressed = (button2State && !prevButton2);
+
+        if (button1JustPressed && !button2State) {
+            buttonOneValue++;
+        }
+        else if (button2JustPressed && !button1State) {
+            buttonOneValue--;
+        }
+
+        prevButton1 = button1State;
+        prevButton2 = button2State;
+    }
+
+    prevBothPressed = bothPressedNow;
+}
+
+// ------------------------------------------------------------
+// cycleHeaterProfileAssignment()
+// ------------------------------------------------------------
+void cycleHeaterProfileAssignment()
+{
+    currentHeaterProfileIndex = (currentHeaterProfileIndex + 1) % 4;
+
+    for (uint8_t i = 0; i < NUM_SENSORS; i++) {
+        uint8_t newProfile = heaterProfileAssignmentsTable[currentHeaterProfileIndex][i];
+        if (!setHeaterProfile(newProfile, sensors[i])) {
+            Serial.println("ERROR: Failed to set heater profile for sensor " + String(i));
+            errLeds();
+        }
+        sensors[i].setOpMode(BME68X_SEQUENTIAL_MODE);
+        if (sensors[i].checkStatus() == BME68X_ERROR) {
+            Serial.println("ERROR: Error setting operation mode for sensor " + String(i));
+            errLeds();
+        }
+    }
 }
 
 // ------------------------------------------------------------
@@ -248,19 +278,19 @@ void collectAndOutputData()
             if (sensors[i].fetchData()) {
                 nFieldsLeft = sensors[i].getData(sensorData[i]);
                 if (sensorData[i].status & BME68X_NEW_DATA_MSK) {
-                    // Append sensor data to line
                     line += "," +
-                        String(sensorData[i].temperature, 2) + "," +
-                        String(sensorData[i].pressure, 2) + "," +
-                        String(sensorData[i].humidity, 2) + "," +
-                        String(sensorData[i].gas_resistance, 2) + "," +
-                        String(sensorData[i].status) + "," +
-                        String(sensorData[i].gas_index);
+                            String(sensorData[i].temperature, 2) + "," +
+                            String(sensorData[i].pressure, 2) + "," +
+                            String(sensorData[i].humidity, 2) + "," +
+                            String(sensorData[i].gas_resistance, 2) + "," +
+                            String(sensorData[i].status) + "," +
+                            String(sensorData[i].gas_index);
                     newLogdata = true;
                 }
             }
         }
         line += "\r\n";
+
         if (newLogdata) {
             Serial.print(line);
         }
@@ -274,9 +304,7 @@ void initializeHeaterProfiles()
 {
     heaterProfiles[0] = {
         "heater_354",
-        // temps array
         {320, 100, 100, 100, 200, 200, 200, 320, 320, 320},
-        // durations array
         { 5, 2, 10, 30, 5, 5, 5, 5, 5, 5 },
         10
     };
@@ -298,11 +326,9 @@ void initializeHeaterProfiles()
     heaterProfiles[3] = {
         "heater_501",
         {210, 265, 265, 320, 320, 265, 210, 155, 100, 155},
-        {24,  2,   22,  2,   22,  24,  24,  24,  24,  24},
+        {24,  2,  22,  2,  22,  24,  24,  24,  24,  24},
         10
     };
-
-    Serial.println("Heater profiles defined (from JSON).");
 }
 
 // ------------------------------------------------------------
@@ -321,7 +347,6 @@ bool setHeaterProfile(uint8_t profileIndex, Bme68x& sensor)
         Serial.println("ERROR: Setting heater profile failed for sensor.");
         return false;
     }
-    Serial.println("Heater profile " + profile.id + " set successfully (index " + String(profileIndex) + ").");
     return true;
 }
 
@@ -380,7 +405,6 @@ void initializeSensorDutyCycles()
 
 // ------------------------------------------------------------
 // updateDutyCycleStates()
-// (Optional if you want to actually alternate scanning & sleeping)
 // ------------------------------------------------------------
 void updateDutyCycleStates()
 {
@@ -390,21 +414,15 @@ void updateDutyCycleStates()
         DutyCycleProfile *p = state.profile;
         if (!p) continue;
 
-        // Example pseudo-logic: if scanning & cyclesLeft=0, switch to sleep
-        // if sleeping & cyclesLeft=0, switch to scan, etc.
-        // (You can decide how you decrement cyclesLeft, e.g., each data read)
         if (state.isScanning && (state.cyclesLeft == 0)) {
             state.isScanning = false;
             state.cyclesLeft = p->numberSleepingCycles;
             state.lastCycleChangeTime = now;
-            // If you had a "sleep" mode:
-            // sensors[i].setOpMode(BME68X_SLEEP_MODE);
         }
         else if (!state.isScanning && (state.cyclesLeft == 0)) {
             state.isScanning = true;
             state.cyclesLeft = p->numberScanningCycles;
             state.lastCycleChangeTime = now;
-            // sensors[i].setOpMode(BME68X_SEQUENTIAL_MODE);
         }
     }
 }

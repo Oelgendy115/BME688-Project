@@ -274,7 +274,7 @@ class DataLoggerGUI:
         tk.Label(controls_frame, text="Time Window:").grid(row=0, column=2, padx=5, pady=5, sticky="e")
         self.time_window_var = tk.StringVar(value="1 Minute")
         self.time_window_dropdown = ttk.Combobox(controls_frame, textvariable=self.time_window_var, state="readonly", width=10)
-        self.time_window_dropdown['values'] = ("1 Minute", "5 Minutes", "10 Minutes")
+        self.time_window_dropdown['values'] = ("1 Minute", "5 Minutes", "10 Minutes","30 Minutes","60 Minutes","120 Minutes")
         self.time_window_dropdown.current(0)
         self.time_window_dropdown.grid(row=0, column=3, padx=5, pady=5, sticky="w")
         self.time_window_dropdown.bind("<<ComboboxSelected>>", lambda event: self.update_time_window())
@@ -794,6 +794,12 @@ class DataLoggerGUI:
             self.time_window = 300
         elif selected_time == "10 Minutes":
             self.time_window = 600
+        elif selected_time == "30 Minutes":
+            self.time_window = 1800
+        elif selected_time == "60 Minutes":
+            self.time_window = 3600
+        elif selected_time == "120 Minutes":
+            self.time_window = 7200
         else:
             self.time_window = 60
         self.update_plot()

@@ -38,22 +38,23 @@ struct DutyCycleProfile {
 
 struct DutyCycleState {
     DutyCycleProfile* profile;
-    bool isScanning;            
-    uint8_t cyclesLeft;         
-    unsigned long lastCycleChangeTime; 
+    bool isScanning;
+    uint8_t cyclesLeft;
+    unsigned long lastCycleChangeTime;
 };
 
 // External Variable Declarations
 extern HeaterProfile heaterProfiles[4];
 extern DutyCycleProfile dutyCycleProfiles[NUM_DUTY_CYCLE_PROFILES];
 extern DutyCycleState dutyCycleStates[NUM_SENSORS];
-
 extern Bme68x sensors[NUM_SENSORS];
 extern bme68xData sensorData[NUM_SENSORS];
 extern commMux communicationSetups[NUM_SENSORS];
 
+// Changed to int for unbounded label tag
+extern int buttonOneValue;
+
 extern uint8_t currentHeaterProfileIndex;
-extern uint8_t buttonOneValue;
 extern uint32_t lastLogged;
 
 extern bool button1State;
@@ -82,5 +83,6 @@ void handleSerialCommands();
 void handleButtonPresses();
 void collectAndOutputData();
 void updateDutyCycleStates();
+void cycleHeaterProfileAssignment();
 
 #endif // MAIN_H
