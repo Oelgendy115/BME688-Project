@@ -76,31 +76,81 @@ def calculate_humidity_max(batch, sensor_number):
     column = f'Sensor{sensor_number}_Humidity_%'
     return batch[column].max()
 
+def calculate_gasresistance_range(batch, sensor_number):
+    column = f'Sensor{sensor_number}_GasResistance_ohm'
+    return batch[column].max() - batch[column].min()
+
+def calculate_gasresistance_slope(batch, sensor_number):
+    column = f'Sensor{sensor_number}_GasResistance_ohm'
+    if len(batch) < 2:
+        return 0.0
+
+    first_val = batch[column].iloc[0]
+    last_val = batch[column].iloc[-1]
+
+    # Convert Real_Time to actual Python datetime and compute difference in seconds
+    time_start = batch['Real_Time'].iloc[0]
+    time_end = batch['Real_Time'].iloc[-1]
+    dt = (time_end - time_start).total_seconds()
+
+    if dt == 0:
+        return 0.0
+    else:
+        return (last_val - first_val) / dt
+
 def get_feature_functions(sampling_rate=10.0):
     features = {}
-    for sensor_num in range(1, 9):
-        features[f'GasResistance_Mean_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_gasresistance_mean(batch, sn)
-        features[f'GasResistance_StdDev_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_gasresistance_std(batch, sn)
-        features[f'GasResistance_Min_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_gasresistance_min(batch, sn)
-        features[f'GasResistance_Max_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_gasresistance_max(batch, sn)
 
+    # Existing standard features
     for sensor_num in range(1, 9):
-        features[f'Temperature_Mean_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_temperature_mean(batch, sn)
-        features[f'Temperature_StdDev_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_temperature_std(batch, sn)
-        features[f'Temperature_Min_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_temperature_min(batch, sn)
-        features[f'Temperature_Max_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_temperature_max(batch, sn)
+        features[f'GasResistance_Mean_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_gasresistance_mean(batch, sn)
+        features[f'GasResistance_StdDev_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_gasresistance_std(batch, sn)
+        features[f'GasResistance_Min_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_gasresistance_min(batch, sn)
+        features[f'GasResistance_Max_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_gasresistance_max(batch, sn)
 
+    # NEW: GasResistance range and slope
     for sensor_num in range(1, 9):
-        features[f'Pressure_Mean_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_pressure_mean(batch, sn)
-        features[f'Pressure_StdDev_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_pressure_std(batch, sn)
-        features[f'Pressure_Min_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_pressure_min(batch, sn)
-        features[f'Pressure_Max_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_pressure_max(batch, sn)
+        features[f'GasResistance_Range_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_gasresistance_range(batch, sn)
+        features[f'GasResistance_Slope_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_gasresistance_slope(batch, sn)
 
+    # Temperature features
     for sensor_num in range(1, 9):
-        features[f'Humidity_Mean_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_humidity_mean(batch, sn)
-        features[f'Humidity_StdDev_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_humidity_std(batch, sn)
-        features[f'Humidity_Min_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_humidity_min(batch, sn)
-        features[f'Humidity_Max_Sensor{sensor_num}'] = lambda batch, sn=sensor_num: calculate_humidity_max(batch, sn)
+        features[f'Temperature_Mean_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_temperature_mean(batch, sn)
+        features[f'Temperature_StdDev_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_temperature_std(batch, sn)
+        features[f'Temperature_Min_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_temperature_min(batch, sn)
+        features[f'Temperature_Max_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_temperature_max(batch, sn)
+
+    # Pressure features
+    for sensor_num in range(1, 9):
+        features[f'Pressure_Mean_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_pressure_mean(batch, sn)
+        features[f'Pressure_StdDev_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_pressure_std(batch, sn)
+        features[f'Pressure_Min_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_pressure_min(batch, sn)
+        features[f'Pressure_Max_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_pressure_max(batch, sn)
+
+    # Humidity features
+    for sensor_num in range(1, 9):
+        features[f'Humidity_Mean_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_humidity_mean(batch, sn)
+        features[f'Humidity_StdDev_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_humidity_std(batch, sn)
+        features[f'Humidity_Min_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_humidity_min(batch, sn)
+        features[f'Humidity_Max_Sensor{sensor_num}'] = \
+            lambda batch, sn=sensor_num: calculate_humidity_max(batch, sn)
 
     return features
 

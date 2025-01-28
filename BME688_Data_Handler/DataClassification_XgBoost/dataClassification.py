@@ -280,6 +280,7 @@ class ModelTrainerGUI:
         - Checks if the file is raw or processed (based on columns)
         - Processes data (windows) if raw
         - Trains an XGBoost classifier on the final dataset
+        - Collects label distribution info by simply counting windows per label
         - Stores minimal metrics
         """
         try:
@@ -290,12 +291,9 @@ class ModelTrainerGUI:
             # 1) DETECT IF RAW OR PROCESSED
             ################################################################
             lower_cols = [col.lower() for col in df_for_training.columns]
-            
-            # Simple example check for raw columns:
+
             if ('timestamp_ms' in lower_cols) and ('sensor1_temperature_deg_c' in lower_cols):
                 self.master.after(0, lambda: self.update_status("Raw file detected. Processing data..."))
-
-                # Process raw data (windowing, etc.)
                 processed_data = processor.process_data(
                     df_for_training,
                     window_size=WINDOW_SIZE,
@@ -303,24 +301,15 @@ class ModelTrainerGUI:
                     selected_features=selected_features,
                     progress_callback=self.train_window_progress_callback
                 )
-
-                # After data is processed, set progress to ~80%
                 self.master.after(0, lambda: self.train_progress_bar.configure(value=80))
                 self.master.after(0, lambda: self.update_status("Data processing completed. Training model..."))
-
-                # Convert to DataFrame
                 processed_df = pd.DataFrame(processed_data)
-
             else:
                 # Already processed – skip window processing
                 self.master.after(0, lambda: self.update_status("Processed file detected. Skipping window processing..."))
                 processed_df = df_for_training.copy()
-                # Move progress bar to ~80%
                 self.master.after(0, lambda: self.train_progress_bar.configure(value=80))
 
-            ################################################################
-            # 2) CHECK IF DATA IS AVAILABLE
-            ################################################################
             if processed_df.empty:
                 self.master.after(0, lambda: messagebox.showwarning(
                     "No Data", "No data available to train on."))
@@ -328,7 +317,7 @@ class ModelTrainerGUI:
                 return
 
             ################################################################
-            # 3) SAVE THE PROCESSED FILE IN "Processed_Data"
+            # 2) SAVE THE PROCESSED FILE IN "Processed_Data"
             ################################################################
             os.makedirs("Processed_Data", exist_ok=True)
             processed_file_path = os.path.join("Processed_Data", "processed_data.csv")
@@ -336,10 +325,11 @@ class ModelTrainerGUI:
             print(f"Saved processed features to: {processed_file_path}")
 
             ################################################################
-            # 4) TRAINING WITH XGBoost
+            # 3) TRAINING WITH XGBoost
             ################################################################
-            # Exclude columns not needed for training
-            feature_cols = [c for c in processed_df.columns if c not in ['Label_Tag', 'Real_Time']]
+            ignore_cols = ['Label_Tag', 'Real_Time', 'WindowDurationSec']
+            feature_cols = [c for c in processed_df.columns if c not in ignore_cols]
+
             X = processed_df[feature_cols]
             y_raw = processed_df['Label_Tag']
 
@@ -347,36 +337,45 @@ class ModelTrainerGUI:
             self.le = LabelEncoder()
             y = self.le.fit_transform(y_raw)
 
-            # Create and train XGBClassifier
-            clf = XGBClassifier(
-                random_state=42,
-                use_label_encoder=False,   # Suppresses a warning in newer XGBoost versions
-                eval_metric='mlogloss'     # For multi-class classification
-            )
+            clf = XGBClassifier(random_state=42, use_label_encoder=False, eval_metric='mlogloss')
             clf.fit(X, y)
 
-            # Save the model (XGB + Label Encoder)
+            # Save the model
             dump((clf, self.le), self.model_path)
 
             ################################################################
-            # 5) SAVE MINIMAL METRICS AND FINALIZE
+            # 4) COLLECT LABEL METRICS BY COUNTING WINDOWS
+            ################################################################
+            label_info = {}
+            group_obj = processed_df.groupby('Label_Tag')
+            for label_val, group_df in group_obj:
+                # total_windows = number of rows for that label in the processed data
+                total_windows = len(group_df)
+                label_info[label_val] = {
+                    'total_windows': total_windows
+                }
+
+            ################################################################
+            # 5) SAVE METRICS AND FINALIZE
             ################################################################
             self.model_metrics = {
-                "trained_on": os.path.basename(self.raw_data_file.get())
+                "trained_on": os.path.basename(self.raw_data_file.get()),
+                "label_info": label_info
             }
             self.save_metrics_to_file(self.model_metrics)
 
-            # Move progress bar from 80% to 100%
             self.master.after(0, lambda: self.train_progress_bar.configure(value=100))
-            self.master.after(0, lambda: self.update_status(
-                f"Training complete. Model saved. Trained on {os.path.basename(self.raw_data_file.get())}")
+            self.master.after(
+                0,
+                lambda: self.update_status(
+                    f"Training complete. Model saved. Trained on {os.path.basename(self.raw_data_file.get())}"
+                )
             )
 
         except Exception as e:
             self.master.after(0, lambda: messagebox.showerror("Training Error", str(e)))
             self.master.after(0, lambda: self.update_status("Idle"))
         finally:
-            # Wait a bit, then reset progress bar
             time.sleep(0.5)
             self.master.after(0, lambda: self.train_progress_bar.configure(value=0))
 
