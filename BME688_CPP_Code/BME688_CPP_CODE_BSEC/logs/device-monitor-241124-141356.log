@@ -1,0 +1,107 @@
+Retrieving heater profiles from sensors...
+Sensor 1: Heater Profile:
+  Step 1: Temp = 320°C, Duration = 150 ms
+  Step 2: Temp = 100°C, Duration = 150 ms
+  Step 3: Temp = 100°C, Duration = 150 ms
+  Step 4: Temp = 100°C, Duration = 150 ms
+  Step 5: Temp = 200°C, Duration = 150 ms
+  Step 6: Temp = 200°C, Duration = 150 ms
+  Step 7: Temp = 200°C, Duration = 150 ms
+  Step 8: Temp = 320°C, Duration = 150 ms
+  Step 9: Temp = 320°C, Duration = 150 ms
+  Step 10: Temp = 320°C, Duration = 150 ms
+Heater profile retrieved for sensor 0
+Sensor 2: Heater Profile:
+  Step 1: Temp = 320°C, Duration = 150 ms
+  Step 2: Temp = 100°C, Duration = 150 ms
+  Step 3: Temp = 100°C, Duration = 150 ms
+  Step 4: Temp = 100°C, Duration = 150 ms
+  Step 5: Temp = 200°C, Duration = 150 ms
+  Step 6: Temp = 200°C, Duration = 150 ms
+  Step 7: Temp = 200°C, Duration = 150 ms
+  Step 8: Temp = 320°C, Duration = 150 ms
+  Step 9: Temp = 320°C, Duration = 150 ms
+  Step 10: Temp = 320°C, Duration = 150 ms
+Heater profile retrieved for sensor 1
+Sensor 3: Heater Profile:
+  Step 1: Temp = 100°C, Duration = 150 ms
+  Step 2: Temp = 100°C, Duration = 150 ms
+  Step 3: Temp = 200°C, Duration = 150 ms
+  Step 4: Temp = 200°C, Duration = 150 ms
+  Step 5: Temp = 200°C, Duration = 150 ms
+  Step 6: Temp = 200°C, Duration = 150 ms
+  Step 7: Temp = 320°C, Duration = 150 ms
+  Step 8: Temp = 320°C, Duration = 150 ms
+  Step 9: Temp = 320°C, Duration = 150 ms
+  Step 10: Temp = 320°C, Duration = 150 ms
+Heater profile retrieved for sensor 2
+Sensor 4: Heater Profile:
+  Step 1: Temp = 100°C, Duration = 150 ms
+  Step 2: Temp = 100°C, Duration = 150 ms
+  Step 3: Temp = 200°C, Duration = 150 ms
+  Step 4: Temp = 200°C, Duration = 150 ms
+  Step 5: Temp = 200°C, Duration = 150 ms
+  Step 6: Temp = 200°C, Duration = 150 ms
+  Step 7: Temp = 320°C, Duration = 150 ms
+  Step 8: Temp = 320°C, Duration = 150 ms
+  Step 9: Temp = 320°C, Duration = 150 ms
+  Step 10: Temp = 320°C, Duration = 150 ms
+Heater profile retrieved for sensor 3
+Sensor 5: Heater Profile:
+  Step 1: Temp = 100°C, Duration = 150 ms
+  Step 2: Temp = 320°C, Duration = 150 ms
+  Step 3: Temp = 170°C, Duration = 150 ms
+  Step 4: Temp = 320°C, Duration = 150 ms
+  Step 5: Temp = 240°C, Duration = 150 ms
+  Step 6: Temp = 240°C, Duration = 150 ms
+  Step 7: Temp = 240°C, Duration = 150 ms
+  Step 8: Temp = 320°C, Duration = 150 ms
+  Step 9: Temp = 320°C, Duration = 150 ms
+  Step 10: Temp = 320°C, Duration = 150 ms
+Heater profile retrieved for sensor 4
+Sensor 6: Heater Profile:
+  Step 1: Temp = 100°C, Duration = 150 ms
+  Step 2: Temp = 320°C, Duration = 150 ms
+  Step 3: Temp = 170°C, Duration = 150 ms
+  Step 4: Temp = 320°C, Duration = 150 ms
+  Step 5: Temp = 240°C, Duration = 150 ms
+  Step 6: Temp = 240°C, Duration = 150 ms
+  Step 7: Temp = 240°C, Duration = 150 ms
+  Step 8: Temp = 320°C, Duration = 150 ms
+  Step 9: Temp = 320°C, Duration = 150 ms
+  Step 10: Temp = 320°C, Duration = 150 ms
+Heater profile retrieved for sensor 5
+Sensor 7: Heater Profile:
+  Step 1: Temp = 210°C, Duration = 150 ms
+  Step 2: Temp = 265°C, Duration = 150 ms
+  Step 3: Temp = 265°C, Duration = 150 ms
+  Step 4: Temp = 320°C, Duration = 150 ms
+  Step 5: Temp = 320°C, Duration = 150 ms
+  Step 6: Temp = 265°C, Duration = 150 ms
+  Step 7: Temp = 210°C, Duration = 150 ms
+  Step 8: Temp = 155°C, Duration = 150 ms
+  Step 9: Temp = 100°C, Duration = 150 ms
+  Step 10: Temp = 155°C, Duration = 150 ms
+Heater profile retrieved for sensor 6
+Sensor 8: Heater Profile:
+  Step 1: Temp = 210°C, Duration = 150 ms
+  Step 2: Temp = 265°C, Duration = 150 ms
+  Step 3: Temp = 265°C, Duration = 150 ms
+  Step 4: Temp = 320°C, Duration = 150 ms
+  Step 5: Temp = 320°C, Duration = 150 ms
+  Step 6: Temp = 265°C, Duration = 150 ms
+  Step 7: Temp = 210°C, Duration = 150 ms
+  Step 8: Temp = 155°C, Duration = 150 ms
+  Step 9: Temp = 100°C, Duration = 150 ms
+  Step 10: Temp = 155°C, Duration = 150 ms
+Heater profile retrieved for sensor 7
+Heater profiles retrieval complete.
+TimeStamp(ms),Label_Tag,HeaterProfile_ID,Sensor1_Temperature(deg C),Sensor1_Pressure(Pa),Sensor1_Humidity(%),Sensor1_GasResistance(ohm),Sensor1_Status,Sensor1_GasIndex,Sensor2_Temperature(deg C),Sensor2_Pressure(Pa),Sensor2_Humidity(%),Sensor2_GasResistance(ohm),Sensor2_Status,Sensor2_GasIndex,Sensor3_Temperature(deg C),Sensor3_Pressure(Pa),Sensor3_Humidity(%),Sensor3_GasResistance(ohm),Sensor3_Status,Sensor3_GasIndex,Sensor4_Temperature(deg C),Sensor4_Pressure(Pa),Sensor4_Humidity(%),Sensor4_GasResistance(ohm),Sensor4_Status,Sensor4_GasIndex,Sensor5_Temperature(deg C),Sensor5_Pressure(Pa),Sensor5_Humidity(%),Sensor5_GasResistance(ohm),Sensor5_Status,Sensor5_GasIndex,Sensor6_Temperature(deg C),Sensor6_Pressure(Pa),Sensor6_Humidity(%),Sensor6_GasResistance(ohm),Sensor6_Status,Sensor6_GasIndex,Sensor7_Temperature(deg C),Sensor7_Pressure(Pa),Sensor7_Humidity(%),Sensor7_GasResistance(ohm),Sensor7_Status,Sensor7_GasIndex,Sensor8_Temperature(deg C),Sensor8_Pressure(Pa),Sensor8_Humidity(%),Sensor8_GasResistance(ohm),Sensor8_Status,Sensor8_GasIndex
+32405,1,0,31.32,100348.36,14.79,4650582.00,176,5,31.75,100327.23,14.65,3408362.75,176,6,32.65,100333.51,14.25,249634.33,176,6,33.16,100314.16,13.77,4501099.00,176,5,34.88,100375.60,12.14,1956999.50,176,5,34.47,100392.63,12.59,1544203.62,176,5,34.99,100388.77,12.34,2000000.00,176,6,34.70,100373.88,12.53,2457108.50,176,6
+33405,1,0,31.89,100346.41,14.83,416683.62,176,0,32.25,100328.64,14.66,64663048.00,176,1,32.82,100338.65,14.26,43243812.00,176,1,33.56,100312.80,13.80,91658744.00,176,0,35.05,100377.45,12.15,88862376.00,176,0,34.65,100391.78,12.61,71022488.00,176,0,34.54,100387.05,12.28,566841.94,176,1,34.29,100373.32,12.49,763894.06,176,1
+34405,1,0,31.43,100344.80,14.78,4646625.00,176,5,31.84,100330.37,14.62,3393537.75,176,6,32.85,100333.57,14.25,259109.31,176,7,33.25,100315.64,13.76,406026.97,176,6,34.93,100377.45,12.14,1952801.00,176,5,34.51,100391.87,12.57,1533795.12,176,5,35.00,100390.84,12.34,1992702.50,176,6,34.70,100374.41,12.54,2468213.25,176,6
+35405,1,0,32.03,100350.38,14.83,64999752.00,176,1,32.30,100331.17,14.67,63673548.00,176,1,32.63,100336.60,14.23,2788291.25,176,2,33.38,100321.29,13.75,89499488.00,176,1,35.11,100377.13,12.15,88502360.00,176,0,34.72,100394.82,12.61,71254144.00,176,0,34.73,100385.93,12.31,554412.56,176,2,34.47,100372.63,12.53,742567.06,176,2
+36405,1,0,31.59,100345.06,14.78,4595792.50,176,6,31.93,100331.59,14.63,334531.19,176,7,32.88,100335.12,14.25,259898.48,176,7,33.28,100317.89,13.75,402674.00,176,6,34.96,100378.60,12.14,1955598.00,176,5,34.56,100393.34,12.59,1455062.12,176,6,35.00,100389.55,12.35,7541542.00,176,7,34.73,100378.04,12.54,9437788.00,176,7
+WARNING: Unknown command received - STOP]
+Unknown command. Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT
+39007,1,0,32.05,100351.91,14.90,411906.69,176,0,32.27,100332.13,14.72,377720.41,176,0,32.94,100342.89,14.31,42611184.00,176,1,33.65,100318.11,13.87,90990632.00,176,0,35.10,100381.13,12.22,408700.84,176,9,34.69,100394.98,12.67,353591.16,176,9,34.65,100388.48,12.38,558038.12,176,1,34.40,100376.30,12.59,744186.06,176,1

@@ -1,0 +1,413 @@
+{
+  "configHeader": {
+    "dateCreated_ISO": "2024-07-12T18:24:41.240Z",
+    "appVersion": "2.3.2",
+    "boardType": "board_8",
+    "boardMode": "heater_profile_exploration",
+    "boardLayout": "grouped"
+  },
+  "configBody": {
+    "heaterProfiles": [
+      {
+        "id": "heater_354",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            320,
+            5
+          ],
+          [
+            100,
+            2
+          ],
+          [
+            100,
+            10
+          ],
+          [
+            100,
+            30
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            320,
+            5
+          ],
+          [
+            320,
+            5
+          ],
+          [
+            320,
+            5
+          ]
+        ]
+      },
+      {
+        "id": "heater_301",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            100,
+            2
+          ],
+          [
+            100,
+            41
+          ],
+          [
+            200,
+            2
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            14
+          ],
+          [
+            320,
+            14
+          ],
+          [
+            320,
+            14
+          ]
+        ]
+      },
+      {
+        "id": "heater_411",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            100,
+            43
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            170,
+            43
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            240,
+            2
+          ],
+          [
+            240,
+            20
+          ],
+          [
+            240,
+            21
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            20
+          ],
+          [
+            320,
+            21
+          ]
+        ]
+      },
+      {
+        "id": "heater_501",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            210,
+            24
+          ],
+          [
+            265,
+            2
+          ],
+          [
+            265,
+            22
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            22
+          ],
+          [
+            265,
+            24
+          ],
+          [
+            210,
+            24
+          ],
+          [
+            155,
+            24
+          ],
+          [
+            100,
+            24
+          ],
+          [
+            155,
+            24
+          ]
+        ]
+      }
+    ],
+    "dutyCycleProfiles": [
+      {
+        "id": "duty_1",
+        "numberScanningCycles": 1,
+        "numberSleepingCycles": 0
+      }
+    ],
+    "sensorConfigurations": [
+      {
+        "sensorIndex": 0,
+        "heaterProfile": "heater_354",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 1,
+        "heaterProfile": "heater_354",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 2,
+        "heaterProfile": "heater_301",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 3,
+        "heaterProfile": "heater_301",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 4,
+        "heaterProfile": "heater_411",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 5,
+        "heaterProfile": "heater_411",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 6,
+        "heaterProfile": "heater_501",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 7,
+        "heaterProfile": "heater_501",
+        "dutyCycleProfile": "duty_1"
+      }
+    ]
+  }
+	,
+	"rawDataHeader": {
+		"counterPowerOnOff": 1,
+		"seedPowerOnOff": "w3s5tyuw68xbh6m4",
+		"counterFileLimit": 1,
+		"dateCreated": "1682429635",
+		"dateCreated_ISO": "2023-04-25T13:33:55+00:00",
+		"firmwareVersion": "2.0.9",
+		"boardId": "4022D8F42680"
+	},
+	"rawDataBody": {
+		"dataColumns": [
+			{
+				"name": "Sensor Index",
+				"unit": "",
+				"format": "integer",
+				"key": "sensor_index",
+				"colId": 1
+			},
+			{
+				"name": "Sensor ID",
+				"unit": "",
+				"format": "integer",
+				"key": "sensor_id",
+				"colId": 2
+			},
+			{
+				"name": "Time Since PowerOn",
+				"unit": "Milliseconds",
+				"format": "integer",
+				"key": "timestamp_since_poweron",
+				"colId": 3
+			},
+			{
+				"name": "Real time clock",
+				"unit": "Unix Timestamp: seconds since Jan 01 1970. (UTC); 0 = missing",
+				"format": "integer",
+				"key": "real_time_clock",
+				"colId": 4
+			},
+			{
+				"name": "Temperature",
+				"unit": "DegreesCelcius",
+				"format": "float",
+				"key": "temperature",
+				"colId": 5
+			},
+			{
+				"name": "Pressure",
+				"unit": "Hectopascals",
+				"format": "float",
+				"key": "pressure",
+				"colId": 6
+			},
+			{
+				"name": "Relative Humidity",
+				"unit": "Percent",
+				"format": "float",
+				"key": "relative_humidity",
+				"colId": 7
+			},
+			{
+				"name": "Resistance Gassensor",
+				"unit": "Ohms",
+				"format": "float",
+				"key": "resistance_gassensor",
+				"colId": 8
+			},
+			{
+				"name": "Heater Profile Step Index",
+				"unit": "",
+				"format": "integer",
+				"key": "heater_profile_step_index",
+				"colId": 9
+			},
+			{
+				"name": "Scanning Mode Enabled",
+				"unit": "",
+				"format": "boolean",
+				"key": "scanning_enabled",
+				"colId": 10
+			},
+			{
+				"name": "Scanning Cycle Index",
+				"unit": "",
+				"format": "integer",
+				"key": "scanning_cycle_index",
+				"colId": 11
+			},
+			{
+				"name": "Label Tag",
+				"unit": "",
+				"format": "integer",
+				"key": "label_tag",
+				"colId": 12
+			},
+			{
+				"name": "Error Code",
+				"unit": "",
+				"format": "integer",
+				"key": "error_code",
+				"colId": 13
+			}
+		],
+		"dataBlock": [
+			[
+				2,
+				480026915,
+				7840,
+				1682429636,
+				23.699673,
+				1008.401550,
+				54.443916,
+				308248.031250,
+				0,
+				1,
+				1,
+				0,
+				0
+			],
+			[
+				3,
+				480026945,
+				7845,
+				1682429636,
+				23.761129,
+				1008.337036,
+				53.980232,
+				227353.468750,
+				0,
+				1,
+				1,
+				0,
+				0
+			],
+			[
+				0,
+				480013121,
+				8266,
+				1682429636,
+				25.590002,
+				1008.867920,
+				54.065506,
+				11004.126953,
+				0,
+				1,
+				1,
+				0,
+				0
+			],
+			[
+				1,
+				479997217,
+				8271,
+				1682429636,
+				25.522064,
+				1008.752014,
+				54.300491,
+				10136.205078,
+				0,
+				1,
+				1,
+				0,
+				0
+			]
+		]
+	}
+}

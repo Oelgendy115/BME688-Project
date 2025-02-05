@@ -1,0 +1,59 @@
+TimeStamp(ms),Label_Tag,HeaterProfile_ID,Sensor1_Temperature(deg C),Sensor1_Pressure(Pa),Sensor1_Humidity(%),Sensor1_GasResistance(ohm),Sensor1_Status,Sensor1_GasIndex,Sensor2_Temperature(deg C),Sensor2_Pressure(Pa),Sensor2_Humidity(%),Sensor2_GasResistance(ohm),Sensor2_Status,Sensor2_GasIndex,Sensor3_Temperature(deg C),Sensor3_Pressure(Pa),Sensor3_Humidity(%),Sensor3_GasResistance(ohm),Sensor3_Status,Sensor3_GasIndex,Sensor4_Temperature(deg C),Sensor4_Pressure(Pa),Sensor4_Humidity(%),Sensor4_GasResistance(ohm),Sensor4_Status,Sensor4_GasIndex,Sensor5_Temperature(deg C),Sensor5_Pressure(Pa),Sensor5_Humidity(%),Sensor5_GasResistance(ohm),Sensor5_Status,Sensor5_GasIndex,Sensor6_Temperature(deg C),Sensor6_Pressure(Pa),Sensor6_Humidity(%),Sensor6_GasResistance(ohm),Sensor6_Status,Sensor6_GasIndex,Sensor7_Temperature(deg C),Sensor7_Pressure(Pa),Sensor7_Humidity(%),Sensor7_GasResistance(ohm),Sensor7_Status,Sensor7_GasIndex,Sensor8_Temperature(deg C),Sensor8_Pressure(Pa),Sensor8_Humidity(%),Sensor8_GasResistance(ohm),Sensor8_Status,Sensor8_GasIndex
+WARNING: Sensor 1 skipped measurements. DIFF:224, MI:224, LMI:0, Status:160
+WARNING: Sensor 2 skipped measurements. DIFF:225, MI:225, LMI:0, Status:160
+WARNING: Sensor 3 skipped measurements. DIFF:223, MI:223, LMI:0, Status:160
+WARNING: Sensor 4 skipped measurements. DIFF:221, MI:221, LMI:0, Status:160
+WARNING: Sensor 5 skipped measurements. DIFF:222, MI:222, LMI:0, Status:160
+WARNING: Sensor 6 skipped measurements. DIFF:225, MI:225, LMI:0, Status:160
+WARNING: Sensor 7 skipped measurements. DIFF:225, MI:225, LMI:0, Status:160
+24653,1,0,28.04,100340.41,16.51,1688375.87,160,9,28.08,100322.24,16.40,431157.91,160,0,29.08,100332.58,15.84,25600000.00,160,1,29.48,100308.85,15.50,502946.97,160,9,31.53,100370.73,13.53,557127.31,160,7,31.21,100384.68,13.96,400000.00,160,8,31.78,100381.98,13.50,26156854.00,160,1,31.66,100369.80,13.68,45637884.00,160,1
+WARNING: Sensor 0 skipped measurements. DIFF:19, MI:242, LMI:223, Status:160
+WARNING: Sensor 1 skipped measurements. DIFF:20, MI:244, LMI:224, Status:160
+WARNING: Sensor 2 skipped measurements. DIFF:20, MI:245, LMI:225, Status:160
+WARNING: Sensor 3 skipped measurements. DIFF:20, MI:243, LMI:223, Status:160
+WARNING: Sensor 4 skipped measurements. DIFF:20, MI:241, LMI:221, Status:160
+WARNING: Sensor 5 skipped measurements. DIFF:20, MI:242, LMI:222, Status:160
+WARNING: Sensor 6 skipped measurements. DIFF:20, MI:245, LMI:225, Status:160
+WARNING: Sensor 7 skipped measurements. DIFF:20, MI:245, LMI:225, Status:160
+25653,1,0,28.01,100337.48,16.55,743375.69,160,8,28.05,100324.09,16.44,406752.72,160,0,29.06,100331.58,15.89,25600000.00,160,1,29.46,100310.27,15.53,483360.88,160,9,31.50,100372.16,13.56,530707.44,160,7,31.16,100382.62,13.98,400000.00,160,8,31.73,100380.05,13.54,25832086.00,160,1,31.62,100369.63,13.70,44612660.00,160,1
+26653,1,0,27.98,100340.36,16.61,705720.19,160,8,28.02,100323.75,16.51,388025.78,160,0,29.03,100332.05,15.93,25600000.00,160,1,29.44,100308.43,15.59,460846.09,160,8,31.48,100372.02,13.60,2051076.62,160,6,31.18,100388.71,14.01,322824.72,160,7,31.72,100380.13,13.57,161871.64,160,0,31.61,100370.62,13.75,272123.31,160,0
+WARNING: Sensor 0 skipped measurements. DIFF:20, MI:26, LMI:6, Status:160
+WARNING: Sensor 1 skipped measurements. DIFF:19, MI:27, LMI:8, Status:160
+WARNING: Sensor 2 skipped measurements. DIFF:20, MI:29, LMI:9, Status:160
+WARNING: Sensor 3 skipped measurements. DIFF:20, MI:26, LMI:6, Status:160
+WARNING: Sensor 4 skipped measurements. DIFF:20, MI:24, LMI:4, Status:160
+WARNING: Sensor 5 skipped measurements. DIFF:20, MI:25, LMI:5, Status:160
+WARNING: Sensor 6 skipped measurements. DIFF:20, MI:28, LMI:8, Status:160
+WARNING: Sensor 7 skipped measurements. DIFF:20, MI:28, LMI:8, Status:160
+27653,1,0,27.96,100338.34,16.67,671035.38,160,8,28.00,100321.55,16.57,400000.00,160,9,29.00,100331.87,15.99,25600000.00,160,1,29.41,100310.20,15.65,439484.97,160,8,31.45,100371.56,13.64,1954198.50,160,6,31.15,100386.65,14.06,268273.50,160,7,31.69,100380.20,13.62,141007.98,160,0,31.59,100370.77,13.80,228265.72,160,0
+WARNING: Unknown command received - srop
+Unknown command. Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT
+WARNING: Sensor 0 skipped measurements. DIFF:19, MI:45, LMI:26, Status:160
+WARNING: Sensor 1 skipped measurements. DIFF:20, MI:47, LMI:27, Status:160
+WARNING: Sensor 2 skipped measurements. DIFF:20, MI:49, LMI:29, Status:160
+WARNING: Sensor 3 skipped measurements. DIFF:20, MI:46, LMI:26, Status:160
+WARNING: Sensor 4 skipped measurements. DIFF:20, MI:44, LMI:24, Status:160
+WARNING: Sensor 5 skipped measurements. DIFF:20, MI:45, LMI:25, Status:160
+WARNING: Sensor 6 skipped measurements. DIFF:20, MI:48, LMI:28, Status:160
+WARNING: Sensor 7 skipped measurements. DIFF:20, MI:48, LMI:28, Status:160
+28653,1,0,27.95,100341.95,16.73,641403.06,160,7,27.97,100321.61,16.65,400000.00,160,9,28.99,100332.77,16.07,25600000.00,160,1,29.38,100308.67,15.74,411162.41,160,8,31.43,100370.68,13.71,1913124.75,160,6,31.13,100387.50,14.13,226148.41,160,7,31.66,100381.03,13.68,135737.02,160,0,31.56,100371.43,13.87,214225.94,160,0
+WARNING: Unknown command received - sto
+Unknown command. Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT
+WARNING: Sensor 0 skipped measurements. DIFF:23, MI:68, LMI:45, Status:160
+WARNING: Sensor 1 skipped measurements. DIFF:23, MI:70, LMI:47, Status:176
+WARNING: Sensor 2 skipped measurements. DIFF:23, MI:72, LMI:49, Status:160
+WARNING: Sensor 3 skipped measurements. DIFF:22, MI:68, LMI:46, Status:160
+WARNING: Sensor 4 skipped measurements. DIFF:23, MI:67, LMI:44, Status:160
+WARNING: Sensor 5 skipped measurements. DIFF:23, MI:68, LMI:45, Status:160
+WARNING: Sensor 6 skipped measurements. DIFF:23, MI:71, LMI:48, Status:176
+WARNING: Sensor 7 skipped measurements. DIFF:23, MI:71, LMI:48, Status:176
+29805,1,0,27.89,100338.84,16.82,595002.88,160,0,27.94,100323.62,16.73,13220900.00,176,2,28.95,100331.52,16.16,796887.19,160,4,29.35,100311.69,15.81,390243.91,160,0,31.37,100367.52,13.79,432797.97,160,9,31.09,100386.91,14.21,172856.17,160,0,31.58,100379.41,13.78,7160839.00,176,3,31.48,100371.08,13.94,11291523.00,176,3
+WARNING: Sensor 0 skipped measurements. DIFF:20, MI:88, LMI:68, Status:160
+WARNING: Sensor 1 skipped measurements. DIFF:19, MI:89, LMI:70, Status:176
+WARNING: Sensor 2 skipped measurements. DIFF:19, MI:91, LMI:72, Status:176
+WARNING: Sensor 3 skipped measurements. DIFF:20, MI:88, LMI:68, Status:160
+WARNING: Sensor 4 skipped measurements. DIFF:19, MI:86, LMI:67, Status:160
+WARNING: Sensor 5 skipped measurements. DIFF:19, MI:87, LMI:68, Status:160
+WARNING: Sensor 6 skipped measurements. DIFF:20, MI:91, LMI:71, Status:176
+WARNING: Sensor 7 skipped measurements. DIFF:20, MI:91, LMI:71, Status:176
+30805,1,0,27.86,100340.37,16.88,566371.69,160,0,27.92,100322.48,16.79,25515282.00,176,1,28.91,100332.66,16.23,6261800.00,176,3,29.32,100308.45,15.89,400000.00,160,0,31.36,100368.30,13.87,417448.03,160,8,31.07,100385.45,14.29,167429.69,160,9,31.57,100377.48,13.84,7086505.00,176,3,31.47,100371.02,14.02,11153165.00,176,3
