@@ -22,6 +22,11 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.utils.class_weight import compute_class_weight
+from joblib import dump
 
 from dataProcessor import DataProcessor, FEATURES
 
@@ -287,6 +292,7 @@ class ModelTrainerGUI:
         - Processes the data into windows if raw.
         - Trains an MLP classifier using a pipeline with StandardScaler.
         - Uses early stopping and an adaptive learning rate for robust training.
+        - Computes sample weights to account for imbalanced data.
         - Collects label distribution info and saves minimal metrics.
         """
         try:
@@ -330,7 +336,7 @@ class ModelTrainerGUI:
             print(f"Saved processed features to: {processed_file_path}")
 
             ################################################################
-            # 3) TRAINING WITH MLP (USING STANDARDSCALER)
+            # 3) TRAINING WITH MLP (USING STANDARDSCALER) WITH WEIGHT ADJUSTMENTS
             ################################################################
             ignore_cols = ['Label_Tag', 'Real_Time', 'WindowDurationSec']
             feature_cols = [c for c in processed_df.columns if c not in ignore_cols]
@@ -338,17 +344,16 @@ class ModelTrainerGUI:
             X = processed_df[feature_cols]
             y_raw = processed_df['Label_Tag']
 
-            # Encode labels
+            # Encode labels (if not already numeric)
             self.le = LabelEncoder()
             y = self.le.fit_transform(y_raw)
 
+            # Compute balanced class weights and create a sample_weight array.
+            # This computes a weight for each class inversely proportional to its frequency.
+            class_weights = compute_class_weight(class_weight='balanced', classes=np.unique(y), y=y)
+            sample_weight = np.array([class_weights[label] for label in y])
+
             # Build a pipeline that scales the features and trains an MLP.
-            # Adjustments:
-            # - Two hidden layers with 128 neurons each.
-            # - ReLU activation.
-            # - Adam optimizer with adaptive learning rate.
-            # - Early stopping enabled to avoid overfitting.
-            # - Increased max_iter to 300 to allow convergence.
             clf = make_pipeline(
                 StandardScaler(),
                 MLPClassifier(
@@ -361,9 +366,12 @@ class ModelTrainerGUI:
                     random_state=42
                 )
             )
-            clf.fit(X, y)
 
-            # Save the trained model (including scaler) and label encoder.
+            # Fit the pipeline while passing sample_weight to the MLPClassifier step.
+            # The double underscore syntax directs the sample_weight parameter to the 'mlpclassifier' step.
+            clf.fit(X, y, mlpclassifier__sample_weight=sample_weight)
+
+            # Save the trained model (including the scaler) and label encoder.
             dump((clf, self.le), self.model_path)
 
             ################################################################
@@ -398,7 +406,6 @@ class ModelTrainerGUI:
         finally:
             time.sleep(0.5)
             self.master.after(0, lambda: self.train_progress_bar.configure(value=0))
-
     def train_window_progress_callback(self, current, total):
         """
         Moves the progress bar from 0 to 80% as windows are processed.
