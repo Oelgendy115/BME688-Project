@@ -1,0 +1,26 @@
+{
+    "trained_on": "air_vs_melon.csv",
+    "label_info": {
+        "Air": {
+            "total_windows": 9130
+        },
+        "Melon_0.025": {
+            "total_windows": 17907
+        },
+        "Melon_0.100": {
+            "total_windows": 3459
+        },
+        "Melon_0.120": {
+            "total_windows": 6319
+        },
+        "Melon_0.125": {
+            "total_windows": 15304
+        },
+        "Melon_0.140": {
+            "total_windows": 5476
+        },
+        "Melon_0.250": {
+            "total_windows": 5966
+        }
+    }
+}
