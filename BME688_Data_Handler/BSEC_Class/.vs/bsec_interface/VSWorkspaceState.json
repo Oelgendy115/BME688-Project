@@ -1,8 +1,0 @@
-{
-  "OutputFoldersPerTargetSystem": {
-    "Local Machine": [
-      "bsec_interface\\out\\build\\x64-Debug",
-      "bsec_interface\\out\\install\\x64-Debug"
-    ]
-  }
-}

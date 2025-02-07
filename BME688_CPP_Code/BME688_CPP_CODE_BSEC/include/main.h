@@ -1,87 +1,71 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include "commMux.h"
-#include <bsec2.h>          // Updated to include BSEC2 library
 #include <Arduino.h>
+#include <Wire.h>
+#include <SPI.h>
+#include <bsec2.h>
+#include "commMux.h"  // Your commMux functions for multiplexer control
 
+// ------------------------------------------------------------
 // Constants
+// ------------------------------------------------------------
 #define NUM_SENSORS 8
-#define FIELDS_PER_SENSOR 6
-#define TOTAL_FIELDS (NUM_SENSORS * FIELDS_PER_SENSOR)
 #define PANIC_LED   LED_BUILTIN
 #define ERROR_DUR   1000
 #define BUTTON_PIN1 32
 #define BUTTON_PIN2 14
 #define DEBOUNCE_DELAY 50
-#define CMD_START "START"
-#define CMD_STOP "STOP"
+
+#define CMD_START    "START"
+#define CMD_STOP     "STOP"
 #define CMD_SEC_PREFIX "SEC_"
-#define CMD_GETHEAT "GETHEAT"
-#define MAX_HEATER_PROFILE_LENGTH 10
-#define NUM_DUTY_CYCLE_PROFILES 1
-#define MEAS_DUR 140
+#define CMD_GETHEAT  "GETHEAT"  // For BSEC, this will output the current subscription profile
 
-// Struct Definitions
-struct HeaterProfile {
+#define MEAS_DUR 140  // minimum time (ms) between logging samples
+
+// (Optional) Temperature offset definitions – adjust these if needed
+#define TEMP_OFFSET_ULP 0
+#define TEMP_OFFSET_LP  0
+
+// ------------------------------------------------------------
+// Structure to hold a BSEC subscription profile
+// ------------------------------------------------------------
+struct BsecProfile {
     String id;
-    uint16_t temps[MAX_HEATER_PROFILE_LENGTH];
-    uint16_t durProf[MAX_HEATER_PROFILE_LENGTH];
-    uint8_t length;
+    const bsec_sensor_configuration_t* sensorList;
+    uint8_t numSensors;
+    uint8_t sampleRate; // e.g. BSEC_SAMPLE_RATE_ULP or BSEC_SAMPLE_RATE_LP
 };
 
-struct DutyCycleProfile {
-    String id;
-    uint8_t numberScanningCycles;
-    uint8_t numberSleepingCycles;
-};
-
-struct DutyCycleState {
-    DutyCycleProfile* profile;
-    bool isScanning;
-    uint8_t cyclesLeft;
-    unsigned long lastCycleChangeTime;
-};
-
-// External Variable Declarations
-extern HeaterProfile heaterProfiles[4];
-extern DutyCycleProfile dutyCycleProfiles[NUM_DUTY_CYCLE_PROFILES];
-extern DutyCycleState dutyCycleStates[NUM_SENSORS];
-extern Bsec2 envSensors[NUM_SENSORS];  // Replaced Bme68x with Bsec2
+// ------------------------------------------------------------
+// External declarations
+// ------------------------------------------------------------
+extern Bsec2 bsecSensors[NUM_SENSORS];
 extern commMux communicationSetups[NUM_SENSORS];
+extern BsecProfile bsecProfiles[4];
 
-// Changed to int for unbounded label tag
 extern int buttonOneValue;
-
-extern uint8_t currentHeaterProfileIndex;
-extern uint32_t lastLogged;
-
-extern bool button1State;
-extern bool lastButton1State;
-extern bool button2State;
-extern bool lastButton2State;
-extern unsigned long lastDebounceTime1;
-extern unsigned long lastDebounceTime2;
-
-extern bool stopDataCollection;
-extern bool jsonClosed;
+extern uint8_t currentBsecProfileIndex;
+extern unsigned long lastLogged;
 extern bool dataCollectionStarted;
-
+extern bool stopDataCollection;
 extern unsigned long lastDataSendTime;
-extern bool firstDataSent;
 extern unsigned long dataInterval;
 
-// Function Prototypes
+extern bool button1State, lastButton1State;
+extern bool button2State, lastButton2State;
+extern unsigned long lastDebounceTime1, lastDebounceTime2;
+
+// ------------------------------------------------------------
+// Function prototypes
+// ------------------------------------------------------------
+void setupSensors(void);
+void handleSerialCommands(void);
+void handleButtonPresses(void);
+void collectAndOutputData(void);
+void cycleBsecProfileAssignment(void);
 void errLeds(void);
-bool setHeaterProfile(uint8_t profileIndex, uint8_t sensorIndex); // Updated for BSEC2
-void checkBsecStatus(Bsec2 &bsec);
-void getHeaterProfiles();
-void initializeHeaterProfiles();
-void initializeDutyCycleProfiles();
-void initializeSensorDutyCycles();
-void handleSerialCommands();
-void handleButtonPresses();
-void collectAndOutputData();
-void updateDutyCycleStates();
-void cycleHeaterProfileAssignment();
+void checkBsecStatus(Bsec2 sensor);
+
 #endif // MAIN_H
