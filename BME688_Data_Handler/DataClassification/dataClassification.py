@@ -49,6 +49,10 @@ class ModelTrainerGUI:
         self.batch_length_var = tk.StringVar(value="5")
         self.time_left_var = tk.StringVar(value="0")
         self.current_prediction = tk.StringVar(value="N/A")
+        
+        # New inputs for window length and stride length
+        self.window_length_var = tk.StringVar(value=str(WINDOW_SIZE))
+        self.stride_length_var = tk.StringVar(value=str(STRIDE))
 
         main_frame = tk.Frame(master)
         main_frame.grid(sticky="nsew", padx=10, pady=10)
@@ -69,17 +73,26 @@ class ModelTrainerGUI:
         tk.Entry(train_model_frame, textvariable=self.raw_data_file).grid(row=0, column=1, padx=5, sticky="ew")
         tk.Button(train_model_frame, text="Browse", command=self.browse_file_train).grid(row=0, column=2, padx=5)
 
-        # Row 1: Frame for Train Button and Progress Bar
+        # Row 1: Frame for Train Button, new inputs, and Progress Bar
         train_buttons_frame = tk.Frame(train_model_frame)
         train_buttons_frame.grid(row=1, column=0, columnspan=3, sticky="ew", pady=5)
         train_buttons_frame.columnconfigure(0, weight=0)  # Train Button
-        train_buttons_frame.columnconfigure(1, weight=1)  # Progress Bar
+        train_buttons_frame.columnconfigure(1, weight=0)  # New inputs frame
+        train_buttons_frame.columnconfigure(2, weight=1)  # Progress Bar
 
         self.train_button = tk.Button(train_buttons_frame, text="Train Model", command=self.train_model)
         self.train_button.grid(row=0, column=0, padx=5, pady=5, sticky="w")
 
+        # New frame for window length and stride inputs (stacked vertically)
+        window_stride_frame = tk.Frame(train_buttons_frame)
+        window_stride_frame.grid(row=0, column=1, padx=5, pady=5, sticky="w")
+        tk.Label(window_stride_frame, text="Window Length:").grid(row=0, column=0, sticky="w")
+        tk.Entry(window_stride_frame, textvariable=self.window_length_var, width=10).grid(row=0, column=1, padx=5, pady=2, sticky="w")
+        tk.Label(window_stride_frame, text="Stride Length:").grid(row=1, column=0, sticky="w")
+        tk.Entry(window_stride_frame, textvariable=self.stride_length_var, width=10).grid(row=1, column=1, padx=5, pady=2, sticky="w")
+
         self.train_progress_bar = ttk.Progressbar(train_buttons_frame, orient="horizontal", mode="determinate")
-        self.train_progress_bar.grid(row=0, column=1, padx=10, pady=5, sticky="ew")
+        self.train_progress_bar.grid(row=0, column=2, padx=10, pady=5, sticky="ew")
         self.train_progress_bar["maximum"] = 100
         self.train_progress_bar["value"] = 0
 
@@ -275,16 +288,19 @@ class ModelTrainerGUI:
         thread.start()
 
     def run_training_bg(self, df_for_training):
-        """
-        Runs in a background thread:
-        - Checks if the file is raw or processed (based on column names)
-        - Processes data (windows) if raw; otherwise, skips processing
-        - Trains a RandomForestClassifier on the final dataset using sample weights for imbalanced data
-        - Collects label distribution info by counting windows per label and stores minimal metrics
-        """
         try:
             processor = DataProcessor()
             selected_features = list(FEATURES.keys())
+
+            # Retrieve window length and stride values from the new inputs
+            try:
+                window_length = int(self.window_length_var.get())
+            except ValueError:
+                window_length = WINDOW_SIZE
+            try:
+                stride = int(self.stride_length_var.get())
+            except ValueError:
+                stride = STRIDE
 
             # 1) DETECT IF RAW OR PROCESSED
             lower_cols = [col.lower() for col in df_for_training.columns]
@@ -292,8 +308,8 @@ class ModelTrainerGUI:
                 self.master.after(0, lambda: self.update_status("Raw file detected. Processing data..."))
                 processed_data = processor.process_data(
                     df_for_training,
-                    window_size=WINDOW_SIZE,
-                    stride=STRIDE,
+                    window_size=window_length,
+                    stride=stride,
                     selected_features=selected_features,
                     progress_callback=self.train_window_progress_callback
                 )
@@ -418,19 +434,25 @@ class ModelTrainerGUI:
         thread.start()
 
     def run_prediction_bg(self, raw_df, clf, le):
-        """
-        Processes the data (windows) with a callback updating the progress bar to 80%,
-        then performs predictions (80-100%), optionally computing metrics if Label_Tag is present.
-        """
         try:
             self.master.after(0, lambda: self.update_status("Processing data for prediction..."))
             processor = DataProcessor()
             selected_features = list(FEATURES.keys())
 
+            # Retrieve window length and stride values from the new inputs
+            try:
+                window_length = int(self.window_length_var.get())
+            except ValueError:
+                window_length = WINDOW_SIZE
+            try:
+                stride = int(self.stride_length_var.get())
+            except ValueError:
+                stride = STRIDE
+
             processed_data = processor.process_data(
                 raw_df,
-                window_size=WINDOW_SIZE,
-                stride=STRIDE,
+                window_size=window_length,
+                stride=stride,
                 selected_features=selected_features,
                 progress_callback=self.predict_window_progress_callback
             )
@@ -452,19 +474,17 @@ class ModelTrainerGUI:
             predictions = le.inverse_transform(y_pred_numeric)
             processed_df['Predicted_Label'] = predictions
 
-            # If we have a Label_Tag, let's compute metrics
+            # If we have a Label_Tag, compute metrics
             if 'Label_Tag' in processed_df.columns:
                 try:
                     y_true_text = processed_df['Label_Tag']
                     try:
-                        # Attempt to transform actual labels
                         y_true_numeric = le.transform(y_true_text)
                         acc = accuracy_score(y_true_numeric, y_pred_numeric)
                         y_true_inversed = le.inverse_transform(y_true_numeric)
                         class_report = classification_report(y_true_inversed, predictions, zero_division=0)
                         cm = confusion_matrix(y_true_inversed, predictions, labels=le.classes_)
 
-                        # Save to model_metrics
                         if not self.model_metrics:
                             self.model_metrics = {}
                         self.model_metrics['accuracy'] = acc
@@ -472,12 +492,10 @@ class ModelTrainerGUI:
                         self.model_metrics['cm'] = cm
                         self.save_metrics_to_file(self.model_metrics)
 
-                        # Enable show metrics button
                         self.master.after(0, lambda: self.show_metrics_button.config(state=tk.NORMAL))
 
                     except ValueError:
-                        pass  # Possibly unseen labels
-
+                        pass
                 except Exception:
                     pass
 
@@ -500,7 +518,6 @@ class ModelTrainerGUI:
             self.master.after(0, lambda: messagebox.showerror("Prediction Error", f"Error during prediction: {e}"))
             self.master.after(0, lambda: self.update_status("Idle"))
         finally:
-            # Wait a bit, then reset progress bar
             time.sleep(0.5)
             self.master.after(0, lambda: self.predict_progress_bar.configure(value=0))
 
@@ -727,7 +744,6 @@ class ModelTrainerGUI:
                         if not line:
                             continue
 
-                        # Show raw data in the UI console
                         self.rt_data_display.config(state='normal')
                         self.rt_data_display.insert(tk.END, line + "\n")
                         self.rt_data_display.yview(tk.END)
@@ -738,14 +754,12 @@ class ModelTrainerGUI:
                         if not parsed:
                             continue
 
-                        # If Real_Time is missing, prepend it
                         if len(parsed) == expected_col_count - 1:
                             real_time_str = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
                             parsed = [real_time_str] + parsed
                         elif len(parsed) != expected_col_count:
                             continue
 
-                        # Convert to DataFrame row
                         try:
                             row_df = pd.DataFrame([parsed], columns=columns)
                             for col in numeric_cols:
@@ -755,7 +769,6 @@ class ModelTrainerGUI:
 
                         self.rt_data_buffer.append(row_df)
 
-                        # Initialize timer
                         if start_time is None:
                             start_time = time.time()
 
@@ -763,7 +776,6 @@ class ModelTrainerGUI:
                         remain = max(0, round(batch_length - elapsed))
                         self.time_left_var.set(str(remain))
 
-                        # Once we hit batch_length seconds, process
                         if elapsed >= batch_length:
                             batch_df = pd.concat(self.rt_data_buffer, ignore_index=True)
                             self.rt_data_buffer.clear()
@@ -771,29 +783,33 @@ class ModelTrainerGUI:
                             self.time_left_var.set(str(int(batch_length)))
 
                             try:
-                                # Use process_batch with window=5, stride=1 (or your set values)
+                                # Retrieve window length and stride for real-time batch processing
+                                try:
+                                    window_length = int(self.window_length_var.get())
+                                except ValueError:
+                                    window_length = WINDOW_SIZE
+                                try:
+                                    stride = int(self.stride_length_var.get())
+                                except ValueError:
+                                    stride = STRIDE
+
                                 features_df = processor.process_batch(
                                     batch_df,
-                                    window_size=WINDOW_SIZE,
-                                    stride=STRIDE,
+                                    window_size=window_length,
+                                    stride=stride,
                                     selected_features=selected_features
                                 )
 
                                 if not features_df.empty:
-                                    # Remove 'Real_Time' and 'Label_Tag' so columns match training
                                     feature_cols_batch = [c for c in features_df.columns
                                                         if c not in ['Label_Tag', 'Real_Time']]
                                     preds_numeric = clf.predict(features_df[feature_cols_batch])
-
-                                    # Majority-vote across windows
                                     final_pred_list = le.inverse_transform(preds_numeric)
-
                                     try:
                                         final_pred = mode(final_pred_list)
                                     except:
                                         values, counts = np.unique(final_pred_list, return_counts=True)
                                         final_pred = values[np.argmax(counts)]
-
                                     self.current_prediction.set(str(final_pred))
                                 else:
                                     self.current_prediction.set("No features extracted")
