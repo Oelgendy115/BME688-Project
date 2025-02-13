@@ -91,7 +91,6 @@ The Data Processor Module is a critical backend component that prepares sensor d
 
 - **Feature Calculation:**  
   - It calculates statistical features such as mean, standard deviation, minimum, and maximum values for sensor data (e.g., gas resistance, temperature, pressure, humidity).
-  - Additional dynamic features, including the range and slope of gas resistance values, are also computed.
 
 - **Data Windowing:**  
   - The module splits continuous sensor data into fixed-length windows (with a configurable stride), ensuring each window contains a single, consistent label.

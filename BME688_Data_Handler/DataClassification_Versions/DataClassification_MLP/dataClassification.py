@@ -22,6 +22,14 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.neural_network import MLPClassifier
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.utils.class_weight import compute_class_weight
+from joblib import dump
+from scikeras.wrappers import KerasClassifier
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv1D, MaxPooling1D, Flatten, Dense, Dropout, BatchNormalization
 
 from dataProcessor import DataProcessor, FEATURES
 
@@ -285,8 +293,7 @@ class ModelTrainerGUI:
         Runs in a background thread:
         - Detects if the file is raw or already processed.
         - Processes the data into windows if raw.
-        - Trains an MLP classifier using a pipeline with StandardScaler.
-        - Uses early stopping and an adaptive learning rate for robust training.
+        - Trains a CNN classifier using a Keras model (wrapped via scikeras for a scikit-learn interface).
         - Collects label distribution info and saves minimal metrics.
         """
         try:
@@ -297,7 +304,6 @@ class ModelTrainerGUI:
             # 1) DETECT IF RAW OR PROCESSED
             ################################################################
             lower_cols = [col.lower() for col in df_for_training.columns]
-
             if ('timestamp_ms' in lower_cols) and ('sensor1_temperature_deg_c' in lower_cols):
                 self.master.after(0, lambda: self.update_status("Raw file detected. Processing data..."))
                 processed_data = processor.process_data(
@@ -330,41 +336,56 @@ class ModelTrainerGUI:
             print(f"Saved processed features to: {processed_file_path}")
 
             ################################################################
-            # 3) TRAINING WITH MLP (USING STANDARDSCALER)
+            # 3) TRAINING WITH A CNN MODEL
             ################################################################
             ignore_cols = ['Label_Tag', 'Real_Time', 'WindowDurationSec']
             feature_cols = [c for c in processed_df.columns if c not in ignore_cols]
 
-            X = processed_df[feature_cols]
+            # Get features and labels
+            X = processed_df[feature_cols].values  # shape: (n_samples, n_features)
             y_raw = processed_df['Label_Tag']
-
-            # Encode labels
             self.le = LabelEncoder()
             y = self.le.fit_transform(y_raw)
 
-            # Build a pipeline that scales the features and trains an MLP.
-            # Adjustments:
-            # - Two hidden layers with 128 neurons each.
-            # - ReLU activation.
-            # - Adam optimizer with adaptive learning rate.
-            # - Early stopping enabled to avoid overfitting.
-            # - Increased max_iter to 300 to allow convergence.
-            clf = make_pipeline(
-                StandardScaler(),
-                MLPClassifier(
-                    hidden_layer_sizes=(128, 128),
-                    activation='relu',
-                    solver='adam',
-                    max_iter=300,
-                    early_stopping=True,
-                    learning_rate='adaptive',
-                    random_state=42
-                )
-            )
-            clf.fit(X, y)
+            # Reshape X for a 1D CNN: (n_samples, n_features, 1)
+            n_samples, n_features = X.shape
+            X = X.reshape((n_samples, n_features, 1))
 
-            # Save the trained model (including scaler) and label encoder.
-            dump((clf, self.le), self.model_path)
+            num_classes = len(self.le.classes_)
+
+            # Import the scikeras wrapper and necessary Keras components
+
+            def create_cnn_model(input_shape, num_classes):
+                model = Sequential()
+                model.add(Conv1D(filters=64, kernel_size=3, activation='relu', input_shape=input_shape))
+                model.add(BatchNormalization())
+                model.add(MaxPooling1D(pool_size=2))
+                model.add(Conv1D(filters=128, kernel_size=3, activation='relu'))
+                model.add(BatchNormalization())
+                model.add(MaxPooling1D(pool_size=2))
+                model.add(Flatten())
+                model.add(Dense(128, activation='relu'))
+                model.add(Dropout(0.5))
+                model.add(Dense(num_classes, activation='softmax'))
+                model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+                return model
+
+            # Create the KerasClassifier wrapper. This provides a scikit-learn–like interface.
+            cnn = KerasClassifier(
+                model=create_cnn_model,
+                model__input_shape=(n_features, 1),
+                model__num_classes=num_classes,
+                epochs=50,
+                batch_size=32,
+                validation_split=0.1,
+                verbose=1,
+                random_state=42
+            )
+
+            cnn.fit(X, y)
+
+            # Save the trained CNN (via the scikeras wrapper) and the label encoder together.
+            dump((cnn, self.le), self.model_path)
 
             ################################################################
             # 4) COLLECT LABEL METRICS BY COUNTING WINDOWS
@@ -385,12 +406,7 @@ class ModelTrainerGUI:
             self.save_metrics_to_file(self.model_metrics)
 
             self.master.after(0, lambda: self.train_progress_bar.configure(value=100))
-            self.master.after(
-                0,
-                lambda: self.update_status(
-                    f"Training complete. Model saved. Trained on {os.path.basename(self.raw_data_file.get())}"
-                )
-            )
+            self.master.after(0, lambda: self.update_status(f"Training complete. Model saved. Trained on {os.path.basename(self.raw_data_file.get())}"))
 
         except Exception as e:
             self.master.after(0, lambda: messagebox.showerror("Training Error", str(e)))
