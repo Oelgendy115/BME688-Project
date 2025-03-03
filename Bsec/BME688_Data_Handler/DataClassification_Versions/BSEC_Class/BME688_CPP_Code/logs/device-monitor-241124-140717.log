@@ -1,0 +1,208 @@
+TimeStamp(ms),Label_Tag,HeaterProfile_ID,Sensor1_Temperature(deg C),Sensor1_Pressure(Pa),Sensor1_Humidity(%),Sensor1_GasResistance(ohm),Sensor1_Status,Sensor1_GasIndex,Sensor2_Temperature(deg C),Sensor2_Pressure(Pa),Sensor2_Humidity(%),Sensor2_GasResistance(ohm),Sensor2_Status,Sensor2_GasIndex,Sensor3_Temperature(deg C),Sensor3_Pressure(Pa),Sensor3_Humidity(%),Sensor3_GasResistance(ohm),Sensor3_Status,Sensor3_GasIndex,Sensor4_Temperature(deg C),Sensor4_Pressure(Pa),Sensor4_Humidity(%),Sensor4_GasResistance(ohm),Sensor4_Status,Sensor4_GasIndex,Sensor5_Temperature(deg C),Sensor5_Pressure(Pa),Sensor5_Humidity(%),Sensor5_GasResistance(ohm),Sensor5_Status,Sensor5_GasIndex,Sensor6_Temperature(deg C),Sensor6_Pressure(Pa),Sensor6_Humidity(%),Sensor6_GasResistance(ohm),Sensor6_Status,Sensor6_GasIndex,Sensor7_Temperature(deg C),Sensor7_Pressure(Pa),Sensor7_Humidity(%),Sensor7_GasResistance(ohm),Sensor7_Status,Sensor7_GasIndex,Sensor8_Temperature(deg C),Sensor8_Pressure(Pa),Sensor8_Humidity(%),Sensor8_GasResistance(ohm),Sensor8_Status,Sensor8_GasIndex
+7889,1,0,31.72,100343.29,15.28,331284.38,176,7,31.88,100324.06,15.21,294422.09,176,7,32.68,100327.11,14.91,216949.16,176,7,33.05,100309.23,14.56,340538.75,176,7,34.21,100370.61,13.56,306586.81,176,7,33.95,100386.37,13.96,249817.03,176,7,34.45,100383.21,13.74,249451.89,176,7,34.31,100369.48,13.97,319500.78,176,7
+8889,1,0,31.87,100347.07,15.31,42819992.00,176,2,32.05,100331.15,15.22,45166092.00,176,2,32.84,100334.30,14.90,33267006.00,176,2,33.23,100314.33,14.53,68732040.00,176,2,34.37,100375.91,13.48,57437336.00,176,2,34.06,100390.62,13.87,45637884.00,176,2,34.57,100383.27,13.65,37078360.00,176,2,34.41,100372.75,13.87,49723824.00,176,2
+9889,1,0,31.71,100341.73,15.28,333876.75,176,7,32.00,100322.30,15.23,308248.03,176,8,32.80,100326.08,14.90,228265.72,176,8,33.04,100307.86,14.52,348180.91,176,7,34.19,100369.93,13.41,312195.13,176,7,33.91,100386.41,13.82,258520.58,176,7,34.39,100380.34,13.57,254853.16,176,7,34.24,100367.38,13.77,326843.28,176,7
+WARNING: Unknown command received - get
+Unknown command. Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT
+WARNING: Unknown command received - heat
+Unknown command. Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT
+Retrieving heater profiles from sensors...
+Sensor 1: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 1°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 0
+Sensor 2: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 1°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 1
+Sensor 3: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 1°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 2
+Sensor 4: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 1°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 3
+Sensor 5: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 1°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 4
+Sensor 6: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 1°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 5
+Sensor 7: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 1°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 6
+Sensor 8: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 1°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 7
+Heater profiles retrieval complete.
+WARNING: Unknown command received - getgheat
+Unknown command. Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT
+Retrieving heater profiles from sensors...
+Sensor 1: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 0°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 0
+Sensor 2: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 0°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 1
+Sensor 3: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 0°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 2
+Sensor 4: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 0°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 3
+Sensor 5: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 0°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 4
+Sensor 6: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 0°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 5
+Sensor 7: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 0°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 6
+Sensor 8: Heater Profile:
+  Step 1: Temp = 8784°C, Duration = 0 ms
+  Step 2: Temp = 16379°C, Duration = 0 ms
+  Step 3: Temp = 59338°C, Duration = 0 ms
+  Step 4: Temp = 4319°C, Duration = 0 ms
+  Step 5: Temp = 0°C, Duration = 0 ms
+  Step 6: Temp = 0°C, Duration = 0 ms
+  Step 7: Temp = 65535°C, Duration = 0 ms
+  Step 8: Temp = 45887°C, Duration = 0 ms
+  Step 9: Temp = 0°C, Duration = 7380 ms
+  Step 10: Temp = 0°C, Duration = 2044 ms
+Heater profile retrieved for sensor 7
+Heater profiles retrieval complete.
+WARNING: Unknown command received - 
+Unknown command. Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT

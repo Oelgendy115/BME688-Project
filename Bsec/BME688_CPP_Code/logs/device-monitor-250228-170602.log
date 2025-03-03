@@ -1,0 +1,2 @@
+WARNING: Unknown command received - S
+Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT, GETDUTY
