@@ -1,25 +1,289 @@
-#include "main.h"
+#include <bsec2.h>
+#include <commMux.h>
+#include <bsecUtil.h>
 
-// ------------------------------------------------------------
-// Global Variables
-// ------------------------------------------------------------
+#define NUM_OF_SENS    8
+#define PANIC_LED      LED_BUILTIN
+#define ERROR_DUR      1000
+#define SAMPLE_RATE    BSEC_SAMPLE_RATE_LP
 
-// BSEC2 sensor objects – one per sensor
-Bsec2 bsecSensors[NUM_SENSORS];
-// Communication setups for each sensor (via your multiplexer)
-commMux communicationSetups[NUM_SENSORS];
+void errLeds(void);
+void newDataCallback(const bme68xData data, const bsecOutputs outputs, Bsec2 bsec);
 
-// -------------------------------------------------------------------------
-// Define two example subscription configurations.
-// (You can modify these to include any outputs you need.)
-//
-// In this example one “full” configuration returns raw values plus processed
-// outputs (IAQ, CO₂ equivalent, breath VOC) while the “minimal” configuration
-// returns only a subset.
-// We then duplicate them to give 4 profiles so that the profile-cycling button
-// can cycle through several choices.
-// -------------------------------------------------------------------------
-bsecSensor sensorList[] = {
+Bsec2 envSensor[NUM_OF_SENS];
+commMux communicationSetup[NUM_OF_SENS];
+uint8_t bsecMemBlock[NUM_OF_SENS][BSEC_INSTANCE_SIZE];
+uint8_t sensor = 0;
+
+// Buttons
+#define BUTTON_PIN1 32
+#define BUTTON_PIN2 14
+#define DEBOUNCE_DELAY 50
+bool button1State = false;
+bool lastButton1State = false;
+bool button2State = false;
+bool lastButton2State = false;
+unsigned long lastDebounceTime1 = 0;
+unsigned long lastDebounceTime2 = 0;
+int labelTag = 1;
+int heaterProfileIndex = 345;
+
+// Commands
+#define CMD_START "START"
+#define CMD_STOP "STOP"
+#define CMD_GETHEAT "GETHEAT"
+
+// SD Card Definitions
+#define SD_PIN_CS 33
+#define CONFIG_FILE_NAME "/config.json"
+
+bool dataCollectionStarted = false;
+bool stopDataCollection = false;
+bool jsonClosed = false;
+
+void loadAndCacheConfig();
+void handleSerialCommands(void);
+void handleButtonPresses(void);
+void newDataCallback(const bme68xData data, const bsecOutputs outputs, Bsec2 bsec);
+bool assignHeaterProfileToSensor(uint8_t sensorIndex, uint8_t profileIndex);
+bool assignDutyCycleProfileToSensor(uint8_t sensorIndex, uint8_t profileIndex, DutyCycleState dutyStates[]);
+void printCache();
+void getHeaterProfiles(void);
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Serial Command and Button Handling Functions
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+void handleSerialCommands(void) {
+  while (Serial.available()) {
+    String command = Serial.readStringUntil('\n');
+    command.trim();
+    if (command.equalsIgnoreCase(CMD_START)) {
+      dataCollectionStarted = true;
+      Serial.println("[INFO] Data collection STARTED.");
+    }
+    else if (command.equalsIgnoreCase(CMD_STOP)) {
+      dataCollectionStarted = false;
+      Serial.println("[INFO] STOP command received.");
+    }
+    else if (command.equalsIgnoreCase(CMD_GETHEAT)) {
+      getHeaterProfiles();
+    }
+    else if (command.equalsIgnoreCase("REPORT")) {  // New command
+      reportAllSensorsStatus(envSensor, NUM_OF_SENS);
+    }
+    else {
+      Serial.println("[WARN] Unknown command: " + command);
+      Serial.println("Available commands: START, STOP, SEC_[ms], GETHEAT, GETDUTY, REPORT");
+    }
+  }
+}
+
+void handleButtonPresses(void) {
+  unsigned long now = millis();
+  bool readingB1 = (digitalRead(BUTTON_PIN1) == LOW);
+  if (readingB1 != lastButton1State) {
+    lastDebounceTime1 = now;
+  }
+  if ((now - lastDebounceTime1) > DEBOUNCE_DELAY) {
+    button1State = readingB1;
+  }
+  lastButton1State = readingB1;
+
+  bool readingB2 = (digitalRead(BUTTON_PIN2) == LOW);
+  if (readingB2 != lastButton2State) {
+    lastDebounceTime2 = now;
+  }
+  if ((now - lastDebounceTime2) > DEBOUNCE_DELAY) {
+    button2State = readingB2;
+  }
+  lastButton2State = readingB2;
+
+  static bool prevBothPressed = false;
+  bool bothNow = (button1State && button2State);
+  if (bothNow && !prevBothPressed) {
+    Serial.println("Both buttons pressed - cycleHeaterProfileAssignment to be implemented");
+  }
+  else if (!bothNow) {
+    static bool prevB1 = false, prevB2 = false;
+    bool b1JustPressed = (button1State && !prevB1);
+    bool b2JustPressed = (button2State && !prevB2);
+    if (b1JustPressed && !button2State) {
+      labelTag++;
+    }
+    else if (b2JustPressed && !button1State) {
+      labelTag--;
+    }
+    prevB1 = button1State;
+    prevB2 = button2State;
+  }
+  prevBothPressed = bothNow;
+}
+
+void newDataCallback(const bme68xData data, const bsecOutputs outputs, Bsec2 bsec) {
+  if (!outputs.nOutputs) {
+    return;
+  }
+  
+  if (!dataCollectionStarted) {
+    return;
+  }
+  
+  // For the first sensor (sensor==0), print the labelTag and heaterProfileIndex along with the header.
+  if (sensor == 0) {
+    Serial.print(String(labelTag) + ",");          // Print the label tag
+    Serial.print(String(heaterProfileIndex) + ",");    // Print the heater profile index
+  }
+  
+  // Print sensor index and timestamp.
+  Serial.print(String(sensor) + ",");
+  Serial.print(String((int)(outputs.output[0].time_stamp / INT64_C(1000000))) + ",");
+  
+  // Loop through the sensor outputs and print each value.
+  for (uint8_t i = 0; i < outputs.nOutputs; i++) {
+    const bsecData output = outputs.output[i];
+    switch (output.sensor_id) {
+      case BSEC_OUTPUT_IAQ:
+        Serial.print(String(output.signal) + ",");
+        Serial.print(String((int)output.accuracy) + ",");
+        break;
+      case BSEC_OUTPUT_RAW_TEMPERATURE:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_RAW_PRESSURE:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_RAW_HUMIDITY:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_RAW_GAS:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_STABILIZATION_STATUS:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_RUN_IN_STATUS:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_STATIC_IAQ:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_CO2_EQUIVALENT:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_BREATH_VOC_EQUIVALENT:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_GAS_PERCENTAGE:
+        Serial.print(String(output.signal) + ",");
+        break;
+      case BSEC_OUTPUT_COMPENSATED_GAS:
+        Serial.print(String(output.signal) + ",");
+        break;
+      default:
+        break;
+    }
+  }
+  
+  if (sensor == 7) {
+    Serial.println();
+  }
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+// Configuration Management Functions
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// Loads the configuration from the SD card and caches heater and duty cycle profiles.
+void loadAndCacheConfig() {
+  if (loadConfigFromSD()) {
+    Serial.println("[INFO] Configuration loaded and cached successfully.");
+  } else {
+    Serial.println("[WARN] Failed to load configuration from SD card. Using defaults.");
+  }
+}
+
+// Applies a cached heater profile (by profileIndex) to the sensor at sensorIndex.
+bool assignHeaterProfileToSensor(uint8_t sensorIndex, uint8_t profileIndex) {
+  if (sensorIndex >= NUM_OF_SENS) {
+    Serial.println("[ERROR] Invalid sensor index for heater profile assignment.");
+    return false;
+  }
+  return applyCachedHeaterProfile(envSensor[sensorIndex], profileIndex);
+}
+
+// Applies a cached duty cycle profile (by profileIndex) to a sensor's duty cycle state.
+bool assignDutyCycleProfileToSensor(uint8_t sensorIndex, uint8_t profileIndex, DutyCycleState dutyStates[]) {
+  if (sensorIndex >= NUM_OF_SENS) {
+    Serial.println("[ERROR] Invalid sensor index for duty cycle assignment.");
+    return false;
+  }
+  applyCachedDutyCycleProfile(dutyStates[sensorIndex], profileIndex);
+  return true;
+}
+
+// Prints all cached heater and duty cycle profiles.
+void printCache() {
+  Serial.println("---- Cached Heater Profiles ----");
+  for (uint8_t i = 0; i < NUM_HEATER_PROFILES; i++) {
+    Serial.print("Heater Profile "); Serial.println(i);
+    if (cachedHeaterProfiles[i].id.length() == 0) {
+      Serial.println("  [Empty]");
+    } else {
+      Serial.print("  ID: "); Serial.println(cachedHeaterProfiles[i].id);
+      Serial.print("  Length: "); Serial.println(cachedHeaterProfiles[i].length);
+      for (uint8_t j = 0; j < cachedHeaterProfiles[i].length; j++) {
+        Serial.print("    Step "); Serial.print(j);
+        Serial.print(": Temp = "); Serial.print(cachedHeaterProfiles[i].temps[j]);
+        Serial.print(", Dur = "); Serial.println(cachedHeaterProfiles[i].durations[j]);
+      }
+    }
+  }
+  
+  Serial.println("---- Cached Duty Cycle Profiles ----");
+  for (uint8_t i = 0; i < NUM_DUTY_CYCLE_PROFILES; i++) {
+    Serial.print("Duty Cycle Profile "); Serial.println(i);
+    if (cachedDutyCycleProfiles[i].id.length() == 0) {
+      Serial.println("  [Empty]");
+    } else {
+      Serial.print("  ID: "); Serial.println(cachedDutyCycleProfiles[i].id);
+      Serial.print("  Number Scanning Cycles: "); Serial.println(cachedDutyCycleProfiles[i].numberScanningCycles);
+      Serial.print("  Number Sleeping Cycles: "); Serial.println(cachedDutyCycleProfiles[i].numberSleepingCycles);
+    }
+  }
+}
+
+void getHeaterProfiles(void) {
+  Serial.println("[INFO] Retrieving heater profiles from sensors via BSEC2...");
+  // Use NUM_OF_SENS (instead of NUM_SENSORS) to match your sensor array size.
+  for (uint8_t i = 0; i < NUM_OF_SENS; i++) {
+    bme68x_heatr_conf heaterConf = envSensor[i].sensor.getHeaterConfiguration();
+    Serial.print("Sensor ");
+    Serial.print(i);
+    Serial.println(" => Heater Profile:");
+    for (uint8_t j = 0; j < heaterConf.profile_len; j++) {
+      Serial.print("  Step ");
+      Serial.print(j + 1);
+      Serial.print(": Temp = ");
+      Serial.print(heaterConf.heatr_temp_prof[j]);
+      Serial.print(" °C, Dur = ");
+      Serial.print(heaterConf.heatr_dur_prof[j]);
+      Serial.println(" ms");
+    }
+  }
+  Serial.println("[INFO] Heater profiles retrieval complete.\n");
+}
+
+//-------------------------------------------------------------------------------------------------------------------------------------------------------------
+void setup(void)
+{
+  bsecSensor sensorList[] = {
     BSEC_OUTPUT_IAQ,
     BSEC_OUTPUT_RAW_TEMPERATURE,
     BSEC_OUTPUT_RAW_PRESSURE,
@@ -36,259 +300,65 @@ bsecSensor sensorList[] = {
     BSEC_OUTPUT_COMPENSATED_GAS
   };
 
-// ------------------------------------------------------------
-// Other Global Variables
-// ------------------------------------------------------------
-int buttonOneValue = 1;
-uint8_t currentBsecProfileIndex = 0;
-unsigned long lastLogged = 0;
-bool dataCollectionStarted = false;
-bool stopDataCollection = false;
-unsigned long lastDataSendTime = 0;
-unsigned long dataInterval = 1000;  // Default data interval in ms
+  Serial.begin(115200);
+  commMuxBegin(Wire, SPI);
+  pinMode(PANIC_LED, OUTPUT);
 
-bool button1State = false, lastButton1State = false;
-bool button2State = false, lastButton2State = false;
-unsigned long lastDebounceTime1 = 0, lastDebounceTime2 = 0;
+  // *** NEW: Set button pins as input with pullups ***
+  pinMode(BUTTON_PIN1, INPUT_PULLUP);
+  pinMode(BUTTON_PIN2, INPUT_PULLUP);
+  
+  delay(100);
+  while (!Serial) delay(10);
 
-// ------------------------------------------------------------
-// setup()
-// ------------------------------------------------------------
-void setup(void) {
-    Serial.begin(115200);
-    Wire.begin();
-    commMuxBegin(Wire, SPI);
+  for (uint8_t i = 0; i < NUM_OF_SENS; i++)
+  {
+    communicationSetup[i] = commMuxSetConfig(Wire, SPI, i, communicationSetup[i]);
+    envSensor[i].allocateMemory(bsecMemBlock[i]);
+    if (!envSensor[i].begin(BME68X_SPI_INTF, commMuxRead, commMuxWrite, commMuxDelay, &communicationSetup[i]))
+    {
+      reportBsecStatus(envSensor[i]);
+    }
+	
+    if (SAMPLE_RATE == BSEC_SAMPLE_RATE_ULP)
+    {
+      envSensor[i].setTemperatureOffset(TEMP_OFFSET_ULP);
+    }
+    else if (SAMPLE_RATE == BSEC_SAMPLE_RATE_LP)
+    {
+      envSensor[i].setTemperatureOffset(TEMP_OFFSET_LP);
+    }
+	
+    if (!envSensor[i].updateSubscription(sensorList, ARRAY_LEN(sensorList), SAMPLE_RATE))
+    {
+      reportBsecStatus (envSensor[i]);
+    }
 
-    pinMode(PANIC_LED, OUTPUT);
-    pinMode(BUTTON_PIN1, INPUT_PULLUP);
-    pinMode(BUTTON_PIN2, INPUT_PULLUP);
-
-    delay(100);
-    while (!Serial) { delay(10); }
-
-    setupSensors();
-    Serial.println("All BSEC sensors initialized");
+    envSensor[i].attachCallback(newDataCallback);
+  }
+  loadAndCacheConfig();
+  printCache();
+  Serial.println("BSEC library version " + 
+                 String(envSensor[0].version.major) + "." +
+                 String(envSensor[0].version.minor) + "." +
+                 String(envSensor[0].version.major_bugfix) + "." +
+                 String(envSensor[0].version.minor_bugfix));
 }
 
-// ------------------------------------------------------------
-// loop()
-// ------------------------------------------------------------
-void loop(void) {
-    handleSerialCommands();
-    handleButtonPresses();
-
-    unsigned long currentTime = millis();
-    if ((currentTime - lastDataSendTime) >= dataInterval) {
-        lastDataSendTime = currentTime;
-        if (dataCollectionStarted) {
-            collectAndOutputData();
-        }
+void loop(void)
+{
+  handleSerialCommands();
+  handleButtonPresses();
+  for (sensor = 0; sensor < NUM_OF_SENS; sensor++)
+  {
+    if (!envSensor[sensor].run())
+    {
+      reportBsecStatus(envSensor[sensor]);
     }
-}
-
-// ------------------------------------------------------------
-// setupSensors()
-// ------------------------------------------------------------
-void setupSensors(void) {
-    for (uint8_t i = 0; i < NUM_SENSORS; i++) {
-        // Set up the communication configuration for sensor i (using your commMux)
-        communicationSetups[i] = commMuxSetConfig(Wire, SPI, i, communicationSetups[i]);
-
-        // Initialize the BSEC2 sensor using the SPI interface.
-        int8_t status = bsecSensors[i].begin(BME68X_SPI_INTF, commMuxRead, commMuxWrite, commMuxDelay, &communicationSetups[i]);
-        if (status != BSEC_OK) {
-            Serial.println("ERROR: Failed to initialize BSEC sensor " + String(i));
-            errLeds();
-        }
-
-        // (Optional) Set temperature offset if needed:
-        if (bsecProfiles[currentBsecProfileIndex].sampleRate == BSEC_SAMPLE_RATE_ULP)
-            bsecSensors[i].setTemperatureOffset(TEMP_OFFSET_ULP);
-        else if (bsecProfiles[currentBsecProfileIndex].sampleRate == BSEC_SAMPLE_RATE_LP)
-            bsecSensors[i].setTemperatureOffset(TEMP_OFFSET_LP);
-
-        // Subscribe to outputs using the current profile
-        status = bsecSensors[i].updateSubscription(sensorList,8,BSEC_SAMPLE_RATE_CONT);
-        if (status != BSEC_OK) {
-            Serial.println("ERROR: Failed to update subscription for sensor " + String(i));
-            errLeds();
-        }
-    }
-}
-
-// ------------------------------------------------------------
-// handleSerialCommands()
-// ------------------------------------------------------------
-void handleSerialCommands(void) {
-    while (Serial.available()) {
-        String command = Serial.readStringUntil('\n');
-        command.trim();
-
-        if (command.equalsIgnoreCase(CMD_START)) {
-            if (!dataCollectionStarted) {
-                dataCollectionStarted = true;
-                stopDataCollection = false;
-                lastDataSendTime = millis();
-
-                // Print CSV header
-                String header = "TimeStamp(ms),Label_Tag,BsecProfile_ID";
-                for (uint8_t i = 0; i < NUM_SENSORS; i++) {
-                    header += ",Sensor" + String(i + 1) + "_Temperature(deg C)";
-                    header += ",Sensor" + String(i + 1) + "_Pressure(Pa)";
-                    header += ",Sensor" + String(i + 1) + "_Humidity(%)";
-                    header += ",Sensor" + String(i + 1) + "_GasResistance(ohm)";
-                    header += ",Sensor" + String(i + 1) + "_IAQ";
-                    header += ",Sensor" + String(i + 1) + "_CO2eq";
-                    header += ",Sensor" + String(i + 1) + "_BreathVOC";
-                }
-                header += "\r\n";
-                Serial.print(header);
-            }
-        }
-        else if (command.equalsIgnoreCase(CMD_STOP)) {
-            if (dataCollectionStarted) {
-                stopDataCollection = true;
-                dataCollectionStarted = false;
-            }
-        }
-        else if (command.startsWith(CMD_SEC_PREFIX) || command.startsWith("sec_")) {
-            String numStr = command.substring(strlen(CMD_SEC_PREFIX));
-            numStr.trim();
-            unsigned long sec = numStr.toInt();
-            if (sec > 0) {
-                dataInterval = sec;
-                Serial.println("Data interval set to " + String(dataInterval) + " ms");
-            } else {
-                Serial.println("ERROR: Invalid data interval received.");
-            }
-        }
-        else if (command.equalsIgnoreCase(CMD_GETHEAT)) {
-            // With BSEC the heater management is internal.
-            Serial.println("Current BSEC Profile: " + bsecProfiles[currentBsecProfileIndex].id);
-        }
-        else {
-            Serial.println("WARNING: Unknown command received - " + command);
-            Serial.println("Available commands: START, STOP, SEC_x (e.g., SEC_5), GETHEAT");
-        }
-    }
-}
-
-// ------------------------------------------------------------
-// handleButtonPresses()
-// ------------------------------------------------------------
-void handleButtonPresses(void) {
-    unsigned long now = millis();
-
-    bool readingButton1 = (digitalRead(BUTTON_PIN1) == LOW);
-    if (readingButton1 != lastButton1State) {
-        lastDebounceTime1 = now;
-    }
-    if ((now - lastDebounceTime1) > DEBOUNCE_DELAY) {
-        button1State = readingButton1;
-    }
-    lastButton1State = readingButton1;
-
-    bool readingButton2 = (digitalRead(BUTTON_PIN2) == LOW);
-    if (readingButton2 != lastButton2State) {
-        lastDebounceTime2 = now;
-    }
-    if ((now - lastDebounceTime2) > DEBOUNCE_DELAY) {
-        button2State = readingButton2;
-    }
-    lastButton2State = readingButton2;
-
-    static bool prevBothPressed = false;
-    bool bothPressedNow = button1State && button2State;
-
-    // If both buttons become pressed simultaneously, cycle the BSEC profile.
-    if (bothPressedNow && !prevBothPressed) {
-        cycleBsecProfileAssignment();
-    }
-    else if (!bothPressedNow) {
-        // Single-button press logic (adjust label value)
-        static bool prevButton1 = false, prevButton2 = false;
-        bool button1JustPressed = (button1State && !prevButton1);
-        bool button2JustPressed = (button2State && !prevButton2);
-
-        if (button1JustPressed && !button2State)
-            buttonOneValue++;
-        else if (button2JustPressed && !button1State)
-            buttonOneValue--;
-
-        prevButton1 = button1State;
-        prevButton2 = button2State;
-    }
-    prevBothPressed = bothPressedNow;
+  }
 }
 
 
-// ------------------------------------------------------------
-// collectAndOutputData()
-// ------------------------------------------------------------
-void collectAndOutputData(void) {
-    String line = "";
-    bool newDataAvailable = false;
-    unsigned long currentTime = millis();
-
-    // Ensure we only log at least every MEAS_DUR milliseconds.
-    if ((currentTime - lastLogged) < MEAS_DUR)
-        return;
-    lastLogged = currentTime;
-
-    // Build the CSV line: timestamp, label (buttonOneValue), current profile ID.
-    line += String(currentTime) + "," + String(buttonOneValue) + "," + bsecProfiles[currentBsecProfileIndex].id;
-
-    // For each sensor, run the BSEC algorithm to update its outputs.
-    for (uint8_t i = 0; i < NUM_SENSORS; i++) {
-        bsecData output = bsecSensors[i].getData();
-        if (!bsecSensors[i].run()) {
-            checkBsecStatus(bsecSensors[i]);
-        }
-            line += "," + String(o, 2);
-            line += "," + String(bsecSensors[i].pressure, 2);
-            line += "," + String(bsecSensors[i].humidity, 2);
-            line += "," + String(bsecSensors[i].gasResistance, 2);
-            line += "," + String(bsecSensors[i].iaq, 2);
-            line += "," + String(bsecSensors[i].co2Equivalent, 2);
-            line += "," + String(bsecSensors[i].breathVoc, 2);
-            newDataAvailable = true;
-        else {
-            line += ",,,,,,,";
-        }
-    }
-    line += "\r\n";
-
-    if (newDataAvailable)
-        Serial.print(line);
-}
-
-// ------------------------------------------------------------
-// errLeds()
-// ------------------------------------------------------------
-void errLeds(void) {
-    while (1) {
-        digitalWrite(PANIC_LED, HIGH);
-        delay(ERROR_DUR);
-        digitalWrite(PANIC_LED, LOW);
-        delay(ERROR_DUR);
-    }
-}
-
-// ------------------------------------------------------------
-// checkBsecStatus()
-// ------------------------------------------------------------
-void checkBsecStatus(Bsec2 sensor) {
-    if (sensor.status < BSEC_OK) {
-        Serial.println("BSEC error code: " + String(sensor.status));
-        errLeds();
-    } else if (sensor.status > BSEC_OK) {
-        Serial.println("BSEC warning code: " + String(sensor.status));
-    }
-    
-    if (sensor.sensor.status < BME68X_OK) {
-        Serial.println("BME68X error code: " + String(sensor.sensor.status));
-        errLeds();
-    } else if (sensor.sensor.status > BME68X_OK) {
-        Serial.println("BME68X warning code: " + String(sensor.sensor.status));
-    }
-}
+/*
+Label,HeaterProfileIndex,Sensor,Timestamp,IAQ,IAQ_accuracy,Raw_Temperature,Raw_Pressure,Raw_Humidity,Raw_Gas,Stabilization_Status,Run_In_Status,Heat_Comp_Temperature,Heat_Comp_Humidity,Static_IAQ,CO2_Equivalent,Breath_VOC_Equivalent,Gas_Percentage,Compensated_Gas
+*/

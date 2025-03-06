@@ -1,26 +1,23 @@
 {
-    "trained_on": "air_vs_melon.csv",
+    "trained_on": "15_01_2025_air_vs_malondealdehyde_1.csv",
     "label_info": {
         "Air": {
-            "total_windows": 9130
+            "total_windows": 5378
         },
         "Melon_0.025": {
-            "total_windows": 17907
-        },
-        "Melon_0.100": {
-            "total_windows": 3459
-        },
-        "Melon_0.120": {
-            "total_windows": 6319
-        },
-        "Melon_0.125": {
-            "total_windows": 15304
-        },
-        "Melon_0.140": {
-            "total_windows": 5476
-        },
-        "Melon_0.250": {
-            "total_windows": 5966
+            "total_windows": 6248
         }
-    }
+    },
+    "accuracy": 1.0,
+    "report": "              precision    recall  f1-score   support\n\n         Air       1.00      1.00      1.00      5378\n Melon_0.025       1.00      1.00      1.00      6248\n\n    accuracy                           1.00     11626\n   macro avg       1.00      1.00      1.00     11626\nweighted avg       1.00      1.00      1.00     11626\n",
+    "cm": [
+        [
+            5378,
+            0
+        ],
+        [
+            0,
+            6248
+        ]
+    ]
 }

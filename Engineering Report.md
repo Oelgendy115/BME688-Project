@@ -1,4 +1,4 @@
-# Engineering Report: Integrated Sensor Data Acquisition, Processing, and Visualization System
+# Report: Integrated Sensor Data Acquisition, Processing, and Visualization System
 
 ## Abstract
 This report provides a comprehensive overview of an integrated system developed to acquire environmental sensor data, extract features from raw measurements, and apply machine learning for classification. The system also offers real-time logging and visualization. It is composed of four major software components that work together to deliver robust and efficient data handling from sensor interfacing to predictive analytics.
