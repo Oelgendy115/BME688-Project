@@ -1,0 +1,26 @@
+{
+    "trained_on": "air_melon_02_19_2025.csv",
+    "label_info": {
+        "Air": {
+            "total_windows": 1794
+        },
+        "Melon_0.025": {
+            "total_windows": 1789
+        },
+        "Melon_0.125": {
+            "total_windows": 1805
+        },
+        "Melon_0.250": {
+            "total_windows": 1855
+        }
+    },
+    "best_params": {
+        "colsample_bytree": 1.0,
+        "learning_rate": 0.2,
+        "max_depth": 5,
+        "n_estimators": 50,
+        "subsample": 0.8
+    },
+    "best_score": 0.94845208210665,
+    "weight_dict": {
+        

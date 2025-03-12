@@ -1,0 +1,305 @@
+Attempting to load dynamic configuration from SD card...
+---- SD Card Config File Contents ----
+{
+  "configHeader": {
+    "dateCreated_ISO": "2024-07-12T18:24:41.240Z",
+    "appVersion": "2.3.2",
+    "boardType": "board_8",
+    "boardMode": "heater_profile_exploration",
+    "boardLayout": "grouped"
+  },
+  "configBody": {
+    "heaterProfiles": [
+      {
+        "id": "heater_354",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            320,
+            5
+          ],
+          [
+            100,
+            2
+          ],
+          [
+            100,
+            10
+          ],
+          [
+            100,
+            30
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            320,
+            5
+          ],
+          [
+            320,
+            5
+          ],
+          [
+            320,
+            5
+          ]
+        ]
+      },
+      {
+        "id": "heater_301",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            100,
+            2
+          ],
+          [
+            100,
+            41
+          ],
+          [
+            200,
+            2
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            14
+          ],
+          [
+            320,
+            14
+          ],
+          [
+            320,
+            14
+          ]
+        ]
+      },
+      {
+        "id": "heater_411",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            100,
+            43
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            170,
+            43
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            240,
+            2
+          ],
+          [
+            240,
+            20
+          ],
+          [
+            240,
+            21
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            20
+          ],
+          [
+            320,
+            21
+          ]
+        ]
+      },
+      {
+        "id": "heater_501",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            210,
+            24
+          ],
+          [
+            265,
+            2
+          ],
+          [
+            265,
+            22
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            22
+          ],
+          [
+            265,
+            24
+          ],
+          [
+            210,
+            24
+          ],
+          [
+            155,
+            24
+          ],
+          [
+            100,
+            24
+          ],
+          [
+            155,
+            24
+          ]
+        ]
+      }
+    ],
+    "dutyCycleProfiles": [
+      {
+        "id": "duty_1",
+        "numberScanningCycles": 1,
+        "numberSleepingCycles": 0
+      }
+    ],
+    "sensorConfigurations": [
+      {
+        "sensorIndex": 0,
+        "heaterProfile": "heater_354",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 1,
+        "heaterProfile": "heater_354",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 2,
+        "heaterProfile": "heater_301",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 3,
+        "heaterProfile": "heater_301",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 4,
+        "heaterProfile": "heater_411",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 5,
+        "heaterProfile": "heater_411",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 6,
+        "heaterProfile": "heater_501",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 7,
+        "heaterProfile": "heater_501",
+        "dutyCycleProfile": "duty_1"
+      }
+    ]
+  }
+}
+---- End of Config File ----
+Loaded heater config: heater_354
+Loaded heater config: heater_301
+Loaded heater config: heater_411
+Loaded heater config: heater_501
+Loaded duty cycle profile: duty_1
+Sensor config loaded: Sensor 0, Heater Profile: heater_354, Duty Cycle: duty_1
+Sensor config loaded: Sensor 1, Heater Profile: heater_354, Duty Cycle: duty_1
+Sensor config loaded: Sensor 2, Heater Profile: heater_301, Duty Cycle: duty_1
+Sensor config loaded: Sensor 3, Heater Profile: heater_301, Duty Cycle: duty_1
+Sensor config loaded: Sensor 4, Heater Profile: heater_411, Duty Cycle: duty_1
+Sensor config loaded: Sensor 5, Heater Profile: heater_411, Duty Cycle: duty_1
+Sensor config loaded: Sensor 6, Heater Profile: heater_501, Duty Cycle: duty_1
+Sensor config loaded: Sensor 7, Heater Profile: heater_501, Duty Cycle: duty_1
+Dynamic configuration loaded from SD card.
+Sensor duty cycles initialized (all use 'duty_1').
+Sensor 0: BME68X: OK.
+Sensor 1: BME68X: OK.
+Sensor 2: BME68X: OK.
+Sensor 3: BME68X: OK.
+Sensor 4: BME68X: OK.
+Sensor 5: BME68X: OK.
+Sensor 6: BME68X: OK.
+Sensor 7: BME68X: OK.
+Assigning sensor configurations dynamically...
+Sensor 0 assigned heater profile heater_354
+Sensor 0 assigned duty cycle profile duty_1
+Sensor 1 assigned heater profile heater_354
+Sensor 1 assigned duty cycle profile duty_1
+Sensor 2 assigned heater profile heater_301
+Sensor 2 assigned duty cycle profile duty_1
+Sensor 3 assigned heater profile heater_301
+Sensor 3 assigned duty cycle profile duty_1
+Sensor 4 assigned heater profile heater_411
+Sensor 4 assigned duty cycle profile duty_1
+Sensor 5 assigned heater profile heater_411
+Sensor 5 assigned duty cycle profile duty_1
+Sensor 6 assigned heater profile heater_501
+Sensor 6 assigned duty cycle profile duty_1
+Sensor 7 assigned heater profile heater_501
+Sensor 7 assigned duty cycle profile duty_1
+All BME68X sensors initialized
+---- Sensor Status Report ----
+Sensor 0: OK.
+Sensor 1: OK.
+Sensor 2: OK.
+Sensor 3: OK.
+Sensor 4: OK.
+Sensor 5: OK.
+Sensor 6: OK.
+Sensor 7: OK.
+---- End of Sensor Report ----
+89134,1,1,27.95,100194.16,26.18,6400000.00,101,15,28.12,100184.33,26.42,6400000.00,101,15,28.74,100204.38,25.45,6400000.00,1110,15,29.15,100179.86,25.33,6400000.00,1110,15,30.40,100251.07,23.09,6400000.00,10100,15,30.17,100268.62,23.58,6400000.00,10100,15,30.34,100269.35,23.46,6400000.00,11000,15,30.33,100251.52,23.79,6400000.00,11000,15
+91134,1,1,28.38,100191.22,26.70,2582597.75,1001011,6,28.51,100191.27,26.62,2159768.00,1001111,6,29.04,100201.25,26.18,8777927.00,1001111,3,29.43,100176.78,25.93,25620016.00,1001101,3,29.77,100251.13,24.48,8059026.00,110100,0,29.46,100269.99,25.09,5249599.50,110101,0,29.15,100263.81,25.48,3810232.50,1010110,0,28.92,100250.35,25.84,7170240.50,1010101,0
+93134,1,1,28.58,100192.13,26.53,2329258.00,1001011,5,28.72,100189.88,26.49,1919850.00,1001111,6,29.28,100202.92,25.99,2087133.75,110111,1,29.67,100178.91,25.70,5249599.50,110100,1,30.20,100249.40,24.27,4883457.50,1101011,9,29.86,100268.91,24.87,2219452.75,1101011,9,29.77,100266.76,25.29,1143176.12,1001000,9,29.49,100248.39,25.67,1910447.75,1000111,9
+95134,1,1,28.65,100193.47,26.34,2095140.62,1001011,5,28.80,100189.95,26.31,1721370.00,1001111,5,29.49,100197.76,25.80,800000.00,1001111,2,29.90,100174.55,25.48,1380053.87,1001101,2,30.53,100253.69,24.01,550833.81,1101011,8,30.19,100272.41,24.62,194123.22,1101011,8,30.07,100266.77,25.00,2925714.25,111010,8,29.80,100250.25,25.37,5378857.50,111001,8
+97134,1,1,28.68,100192.37,26.19,1852136.50,1001011,6,28.84,100190.29,26.14,1600000.00,1001111,6,29.59,100198.95,25.56,800000.00,1001111,2,30.03,100178.71,25.24,4905389.00,110100,1,30.63,100248.92,23.73,97061.61,1101011,9,30.28,100269.03,24.35,71269.48,1101011,9,30.22,100265.48,24.71,799687.63,1001000,9,29.95,100252.80,25.11,1352708.00,1000111,9

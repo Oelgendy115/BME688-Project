@@ -1,8 +1,0 @@
-Unknown command. Available commands: START, STOP, SEC_num (e.g., SEC_5000), GETHEAT
-TimeStamp(ms),Label_Tag,HeaterProfile_ID,Sensor1_Temperature(deg C),Sensor1_Pressure(Pa),Sensor1_Humidity(%),Sensor1_GasResistance(ohm),Sensor1_Status,Sensor1_GasIndex,Sensor2_Temperature(deg C),Sensor2_Pressure(Pa),Sensor2_Humidity(%),Sensor2_GasResistance(ohm),Sensor2_Status,Sensor2_GasIndex,Sensor3_Temperature(deg C),Sensor3_Pressure(Pa),Sensor3_Humidity(%),Sensor3_GasResistance(ohm),Sensor3_Status,Sensor3_GasIndex,Sensor4_Temperature(deg C),Sensor4_Pressure(Pa),Sensor4_Humidity(%),Sensor4_GasResistance(ohm),Sensor4_Status,Sensor4_GasIndex,Sensor5_Temperature(deg C),Sensor5_Pressure(Pa),Sensor5_Humidity(%),Sensor5_GasResistance(ohm),Sensor5_Status,Sensor5_GasIndex,Sensor6_Temperature(deg C),Sensor6_Pressure(Pa),Sensor6_Humidity(%),Sensor6_GasResistance(ohm),Sensor6_Status,Sensor6_GasIndex,Sensor7_Temperature(deg C),Sensor7_Pressure(Pa),Sensor7_Humidity(%),Sensor7_GasResistance(ohm),Sensor7_Status,Sensor7_GasIndex,Sensor8_Temperature(deg C),Sensor8_Pressure(Pa),Sensor8_Humidity(%),Sensor8_GasResistance(ohm),Sensor8_Status,Sensor8_GasIndex
-8847,1,1,38.52,99747.41,18.83,10940902.00,b0,0,38.36,99726.50,19.05,11753228.00,b0,0,39.15,99733.96,18.64,8928610.00,b0,0,39.18,99713.74,18.51,15566746.00,b0,0,38.74,99768.85,17.73,14397188.00,b0,0,38.73,99777.13,18.09,13736324.00,b0,0,38.31,99780.25,18.29,12459316.00,b0,0,38.29,99766.27,18.36,15883665.00,b0,0
-9847,1,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-10847,1,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-11847,1,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12847,1,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13847,1,1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
