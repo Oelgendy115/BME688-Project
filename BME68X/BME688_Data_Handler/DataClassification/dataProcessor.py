@@ -9,7 +9,7 @@ from scipy.stats import entropy
 ###############################################################################
 # GLOBAL VARIABLE FOR LABEL ENCODER CSV PATH
 ###############################################################################
-LABEL_ENCODER_PATH = r"/Users/omarelgendy/Documents/BME688-Project/BME68X/BME688_Data_Handler/Label_Encoder.csv"
+LABEL_ENCODER_PATH = r"C:\BME688 Project\BME68X\BME688_Data_Handler\Label_Encoder.csv"
 
 def make_feature_func(column, func):
     """
