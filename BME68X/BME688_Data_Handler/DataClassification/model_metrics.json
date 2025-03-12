@@ -1,0 +1,14 @@
+{
+    "trained_on": "03_10_25_Code_Test.csv",
+    "label_info": {
+        "Air": {
+            "total_windows": 1566
+        },
+        "Ethanol": {
+            "total_windows": 352
+        },
+        "Melon_0.0250": {
+            "total_windows": 661
+        }
+    }
+}

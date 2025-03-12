@@ -1,0 +1,26 @@
+TimeStamp(ms),Label_Tag,HeaterProfile_ID,Sensor1_Temperature(deg C),Sensor1_Pressure(Pa),Sensor1_Humidity(%),Sensor1_GasResistance(ohm),Sensor1_Status,Sensor1_GasIndex,Sensor2_Temperature(deg C),Sensor2_Pressure(Pa),Sensor2_Humidity(%),Sensor2_GasResistance(ohm),Sensor2_Status,Sensor2_GasIndex,Sensor3_Temperature(deg C),Sensor3_Pressure(Pa),Sensor3_Humidity(%),Sensor3_GasResistance(ohm),Sensor3_Status,Sensor3_GasIndex,Sensor4_Temperature(deg C),Sensor4_Pressure(Pa),Sensor4_Humidity(%),Sensor4_GasResistance(ohm),Sensor4_Status,Sensor4_GasIndex,Sensor5_Temperature(deg C),Sensor5_Pressure(Pa),Sensor5_Humidity(%),Sensor5_GasResistance(ohm),Sensor5_Status,Sensor5_GasIndex,Sensor6_Temperature(deg C),Sensor6_Pressure(Pa),Sensor6_Humidity(%),Sensor6_GasResistance(ohm),Sensor6_Status,Sensor6_GasIndex,Sensor7_Temperature(deg C),Sensor7_Pressure(Pa),Sensor7_Humidity(%),Sensor7_GasResistance(ohm),Sensor7_Status,Sensor7_GasIndex,Sensor8_Temperature(deg C),Sensor8_Pressure(Pa),Sensor8_Humidity(%),Sensor8_GasResistance(ohm),Sensor8_Status,Sensor8_GasIndex
+5562,1,1,0,36.38,99778.13,15.45,38080184.00,90,3,35,0,0,16
+5563,1,1,0,36.37,99778.53,15.45,38080184.00,90,3,36,0,0,16
+5563,1,1,0,36.37,99778.70,15.47,38080184.00,90,3,37,0,0,16
+5564,1,1,1,36.52,99758.32,15.36,35453612.00,90,3,35,0,0,16
+5564,1,1,1,36.52,99758.27,15.36,35453612.00,90,3,36,0,0,16
+5564,1,1,1,36.52,99757.82,15.36,35453612.00,90,3,37,0,0,16
+5565,1,1,2,37.29,99768.39,15.00,26570444.00,90,3,35,0,0,16
+5565,1,1,2,37.29,99768.10,15.00,26570444.00,90,3,36,0,0,16
+5566,1,1,2,37.29,99767.66,14.99,26570444.00,90,3,37,0,0,16
+5566,1,1,3,37.54,99743.54,14.62,55822828.00,90,3,35,0,0,16
+5567,1,1,3,37.55,99743.01,14.64,55822828.00,90,3,36,0,0,16
+5567,1,1,3,37.54,99745.22,14.63,55822828.00,90,3,37,0,0,16
+5568,1,1,4,37.96,99805.69,13.59,41795920.00,90,3,35,0,0,16
+5568,1,1,4,37.96,99804.40,13.62,41795920.00,90,3,36,0,0,16
+5568,1,1,4,37.95,99804.84,13.60,41795920.00,90,3,37,0,0,16
+5569,1,1,5,37.68,99824.50,14.01,33496550.00,90,3,35,0,0,16
+5569,1,1,5,37.68,99825.80,13.99,33496550.00,90,3,36,0,0,16
+5569,1,1,5,37.68,99823.76,14.01,33496550.00,90,3,37,0,0,16
+5570,1,1,6,37.72,99816.06,13.89,34097816.00,90,3,35,0,0,16
+5571,1,1,6,37.72,99817.70,13.90,34097816.00,90,3,36,0,0,16
+5571,1,1,6,37.72,99816.59,13.88,34097816.00,90,3,37,0,0,16
+5572,1,1,7,37.53,99805.05,14.03,45119448.00,90,3,35,0,0,16
+5572,1,1,7,37.52,99806.75,14.03,45119448.00,90,3,36,0,0,16
+5572,1,1,7,37.51,99804.35,14.05,45119448.00,90,3,37,0,0,16
+Skip I:0, DIFF:5, MI:42, LMI:37, S:90
