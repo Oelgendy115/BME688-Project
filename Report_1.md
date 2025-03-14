@@ -3,9 +3,6 @@
 
 # BME68X Project Documentation
 
-*Version 1.1*  
-*Date: YYYY-MM-DD*  
-
 ---
 
 ## Table of Contents
@@ -48,13 +45,9 @@ The project comprises two major components:
 - **Firmware (Embedded C++ - BME68X):**  
   The firmware is responsible for sensor initialization, dynamic configuration via an SD card, applying heater profiles, adjusting data intervals, and handling various sensor commands. The trial code under the BSEC directory was explored to differentiate concentration levels, but the final solution focuses solely on odor classification.
 
-- **Data Processing and GUI (Python):**  
+- **Data Classification and Collection (Python):**  
   Python modules manage data collection, feature extraction, and classification. The primary model employed is a RandomForest classifier from scikit-learn, which has been tuned for odor classification based on the sensor data.
 
-A high-level system architecture diagram is shown below:
-
-![System Architecture](path/to/architecture_diagram.png)  
-*Insert your system architecture diagram here.*
 
 ---
 
@@ -62,7 +55,7 @@ A high-level system architecture diagram is shown below:
 
 ### Sensor Initialization and Error Handling
 
-The firmware (located in the BME68X directory) initializes multiple BME68X sensors and includes robust error handling routines. Key functionalities include:
+The firmware (located in the BME68X directory called BME688_CPP_CODE) initializes multiple BME68X sensors and includes robust error handling routines. Key functionalities include:
 
 - **Error Reporting:**  
   The function `getBmeErrorMessage()` returns descriptive error messages corresponding to different error codes. Visual indicators such as LED blinking are used to signal warnings or errors.
@@ -70,11 +63,11 @@ The firmware (located in the BME68X directory) initializes multiple BME68X senso
 - **Sensor Status Report:**  
   The firmware cycles through each sensor to verify their operational status and prints diagnostic messages while triggering LED alerts for detected issues.
 
-### Dynamic Configuration, Heater Profiles, and Command Handling
-
-The firmware dynamically loads configuration data from an SD card. If the SD card is unavailable or the configuration file is empty, it falls back to hardcoded configurations.
 
 #### Heater Profiles
+
+- **Dynamic Configuration, Heater Profiles, and Command Handling:**
+  The firmware dynamically loads configuration data from an SD card. If the SD card is unavailable or the configuration file is empty, it falls back to hardcoded configurations.
 
 - **Heater Profile Application:**  
   The firmware supports multiple heater profiles to control the sensor's operation. Functions like `setHeaterProfile()` assign specific heater configurations, while button presses allow for cycling between profiles.
@@ -89,11 +82,12 @@ The system supports a variety of commands sent via the serial interface and butt
   - **`SEC_<number>`:** Adjusts the data interval (e.g., `SEC_3000` sets the interval to 3000 milliseconds).
   - **`GETHEAT`:** Requests the current heater profile configuration from the sensor.
   - **`START_CONFIG_UPLOAD`:** Initiates the process to upload a new JSON configuration via the serial interface.
+  - **`END_CONFIG_UPLOAD`:** Marks the end of the process to upload a new JSON configuration via the serial interface.
   - **`STATUS_REPORT`:** Triggers a full sensor status report.
 
 - **Button Press Actions:**
   - **Single Button Press:**  
-    When one button is pressed, it increments or decrements a counter (used for tracking or as a label tag).
+    When one button is pressed, it increments (Button 1) or decrements (Button 2) a counter used for tracking the current odors as a label tag.
   - **Simultaneous Button Press:**  
     Pressing both buttons together triggers the cycling of heater profile assignments across sensors.
 
@@ -113,7 +107,7 @@ Python scripts in the BME68X Data Handler module manage the acquisition and proc
 - **Feature Extraction:**  
   The `DataProcessor` class uses a sliding window approach to compute statistical features (mean, standard deviation, minimum, and maximum) from the sensor data, preparing the data for classification.
 
-### Model Training Using RandomForest (scikit-learn)
+### Model Training Using RandomForest 
 
 The primary model used for odor classification is a RandomForest classifier from scikit-learn. The training process involves:
 
@@ -127,7 +121,7 @@ The primary model used for odor classification is a RandomForest classifier from
   Training the RandomForest classifier with balanced class weights to account for any data imbalances.
   
 - **Metrics Generation:**  
-  Generating performance metrics such as accuracy, confusion matrix, and classification reports, which are saved in a JSON file (`model_metrics.json`).
+  Generating performance metrics such as accuracy, confusion matrix, and classification reports, which are saved in a JSON file (`model_metrics.json`) when a file is used in prediction.
 
 ---
 
@@ -144,11 +138,9 @@ A dedicated GUI (developed with Tkinter) provides the following functionalities:
   The GUI includes controls for setting the window size and stride for feature extraction. It shows training progress and status updates.
   
 - **Model Prediction:**  
-  After training the model (using the RandomForest classifier), the GUI allows users to run batch predictions and view model metrics.
+  After training the model, the GUI allows users to run real-time predictions and predictions from files.
 
-*Placeholder for Trainer GUI screenshot:*  
-![Model Trainer GUI](path/to/trainer_screenshot.png)  
-*Insert screenshot of the Model Trainer GUI here.*
+![Model Trainer GUI](Screenshots\DataClassification_GUI_win.png)  
 
 ### Data Logger GUI
 
@@ -166,22 +158,20 @@ The Data Logger GUI enables real-time monitoring and logging of sensor data. Its
 - **Interactive Plotting:**  
   Uses Matplotlib to plot sensor measurements over time, with options to adjust the displayed time window and select parameters.
 
-*Placeholder for Data Logger GUI screenshot:*  
-![Data Logger GUI](path/to/datalogger_screenshot.png)  
-*Insert screenshot of the Data Logger GUI here.*
+![Data Logger GUI](Screenshots\DataCollection_GUI_win.png)  
 
 ---
 
 ## Results
 
 - **Odor Classification:**  
-  The system is capable of reliably classifying different odors based on sensor data using the RandomForest classifier. Although initial trials attempted to differentiate different concentration levels (using the BSEC trial code and various classification versions), these approaches did not yield the desired results. The final system distinguishes between odor types but not concentration differences.
+  The system is capable of reliably classifying different odors based on sensor data using the RandomForest classifier. Although initial trials attempted to differentiate different concentration levels using the BSEC trial code and various classification versions, these approaches did not yield the desired results. The final system distinguishes between odor types but not concentration differences.
 
 - **Dynamic Heater Profiles:**  
   The firmware successfully applies and cycles through different heater profiles, and the GUI reflects these changes in real time.
 
 - **Sensor Commands and Controls:**  
-  All sensor commands (e.g., `START`, `STOP`, `SEC_<number>`, `GETHEAT`) and button actions function as intended, allowing comprehensive control over sensor operation and data logging.
+  All sensor commands (e.g., `START`, `STOP`, `GETHEAT`) and button actions function as intended, allowing comprehensive control over sensor operation and data logging.
 
 ---
 
@@ -227,20 +217,18 @@ BME688-PROJECT
 │   │   │   │   │── dataClassification.py
 │   │   │   │   │── dataProcessor.py
 │   │   │   │   │── model_metrics.json
-│   │   │   │── DataClassification_Versions
+│   │   │   │── DataCollection
+│   │   │   │   │── DataCollection.py
+│   │   │   │── DataClassification_Versions (trial code for concentration differentiation)
 │   │   │   │   │── DataClassification_linearsvc
 │   │   │   │   │── DataClassification_MLP
 │   │   │   │   │── DataClassification_RandomForest
 │   │   │   │   │── DataClassification_SGDClassifier
 │   │   │   │   │── DataClassification_XgBoost
-│   │   │   │── DataCollection
-│   │   │   │   │── DataCollection.py
 │   │   │   │── Testing_CSV
 │   │   │   │── Training_Data
 │   │   │   │── Label_Encoder.csv
 │── (BSEC folder omitted – trial code for concentration differentiation)
-│── Screenshots
-│── Report.pdf
 ```
 
 ### Appendix B: Command and Button Action Summary
@@ -251,15 +239,11 @@ BME688-PROJECT
   - **`SEC_<number>`:** Sets the data interval (e.g., `SEC_3000` sets a 3000 ms interval).
   - **`GETHEAT`:** Retrieves and displays the current heater profile configuration.
   - **`START_CONFIG_UPLOAD`:** Begins the process to upload a new configuration file via serial.
+  - **`END_CONFIG_UPLOAD`:** Ends the process to upload a new configuration file via seria.
   - **`STATUS_REPORT`:** Generates and prints a complete sensor status report.
 
 - **Button Press Actions:**
   - **Single Button Press:** Increments or decrements a counter value used as a label tag.
   - **Simultaneous Button Press:** Cycles through different heater profile assignments across the sensors.
 
----
-
-*End of Report*
-
----
 
