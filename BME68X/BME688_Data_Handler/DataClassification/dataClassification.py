@@ -405,12 +405,8 @@ class ModelTrainerGUI:
             y_raw = processed_df['Label_Tag']
             self.le = LabelEncoder()
             y = self.le.fit_transform(y_raw)
-            classes = np.unique(y)
-            weights = compute_class_weight(class_weight='balanced', classes=classes, y=y)
-            weight_dict = dict(zip(classes, weights))
-            sample_weights = np.array([weight_dict[label] for label in y])
             clf = RandomForestClassifier(random_state=42)
-            clf.fit(X, y, sample_weight=sample_weights)
+            clf.fit(X, y)
             dump((clf, self.le), self.model_path)
             label_info = {}
             for label_val, group_df in processed_df.groupby('Label_Tag'):

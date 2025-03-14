@@ -1,11 +1,14 @@
 {
-    "trained_on": "air_melon_12_03_2025.csv",
+    "trained_on": "air_eth_melon_14_03_2025.csv",
     "label_info": {
         "Air": {
-            "total_windows": 305
+            "total_windows": 129
         },
-        "Melon_0.0250": {
-            "total_windows": 442
+        "Ethanol": {
+            "total_windows": 206
+        },
+        "Melon_0.250": {
+            "total_windows": 239
         }
     }
 }
