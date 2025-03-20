@@ -1,14 +1,17 @@
 {
-    "trained_on": "air_eth_melon_14_03_2025.csv",
+    "trained_on": "14_01_2025_air_vs_malondealdehyde.csv",
     "label_info": {
         "Air": {
-            "total_windows": 129
+            "total_windows": 628
         },
         "Melon_0.025": {
-            "total_windows": 239
+            "total_windows": 639
         },
         "Melon_0.250": {
-            "total_windows": 206
+            "total_windows": 645
+        },
+        "airr": {
+            "total_windows": 607
         }
     }
 }

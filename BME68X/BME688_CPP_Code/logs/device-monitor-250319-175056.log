@@ -1,0 +1,570 @@
+WARNING: Unknown command received - sta
+Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT, GETDUTY, START_CONFIG_UPLOAD, STATUS_REPORT
+Enter JSON config data. End with a single line 'END_CONFIG_UPLOAD'.
+Config file updated successfully.
+Attempting to load dynamic configuration from SD card...
+---- SD Card Config File Contents ----
+{
+  "configHeader": {
+    "dateCreated_ISO": "2024-07-12T18:24:41.240Z",
+    "appVersion": "2.3.2",
+    "boardType": "board_8",
+    "boardMode": "heater_profile_exploration",
+    "boardLayout": "grouped"
+  },
+  "configBody": {
+    "heaterProfiles": [
+      {
+        "id": "heater_354",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            320,
+            5
+          ],
+          [
+            100,
+            2
+          ],
+          [
+            100,
+            10
+          ],
+          [
+            100,
+            30
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            320,
+            5
+          ],
+          [
+            320,
+            5
+          ],
+          [
+            320,
+            5
+          ]
+        ]
+      },
+      {
+        "id": "heater_301",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            100,
+            2
+          ],
+          [
+            100,
+            41
+          ],
+          [
+            200,
+            2
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            14
+          ],
+          [
+            320,
+            14
+          ],
+          [
+            320,
+            14
+          ]
+        ]
+      },
+      {
+        "id": "heater_411",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            100,
+            43
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            170,
+            43
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            240,
+            2
+          ],
+          [
+            240,
+            20
+          ],
+          [
+            240,
+            21
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            20
+          ],
+          [
+            320,
+            21
+          ]
+        ]
+      },
+      {
+        "id": "heater_501",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            210,
+            24
+          ],
+          [
+            265,
+            2
+          ],
+          [
+            265,
+            22
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            22
+          ],
+          [
+            265,
+            24
+          ],
+          [
+            210,
+            24
+          ],
+          [
+            155,
+            24
+          ],
+          [
+            100,
+            24
+          ],
+          [
+            155,
+            24
+          ]
+        ]
+      }
+    ],
+    "dutyCycleProfiles": [
+      {
+        "id": "duty_1",
+        "numberScanningCycles": 1,
+        "numberSleepingCycles": 2
+      }
+    ],
+    "sensorConfigurations": [
+      {
+        "sensorIndex": 0,
+        "heaterProfile": "heater_354",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 1,
+        "heaterProfile": "heater_354",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 2,
+        "heaterProfile": "heater_301",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 3,
+        "heaterProfile": "heater_301",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 4,
+        "heaterProfile": "heater_411",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 5,
+        "heaterProfile": "heater_411",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 6,
+        "heaterProfile": "heater_501",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 7,
+        "heaterProfile": "heater_501",
+        "dutyCycleProfile": "duty_1"
+      }
+    ]
+  }
+}
+---- End of Config File ----
+Loaded heater config: heater_354
+Loaded heater config: heater_301
+Loaded heater config: heater_411
+Loaded heater config: heater_501
+Loaded duty cycle profile: duty_1
+Sensor config loaded: Sensor 0, Heater Profile: heater_354, Duty Cycle: duty_1
+Sensor config loaded: Sensor 1, Heater Profile: heater_354, Duty Cycle: duty_1
+Sensor config loaded: Sensor 2, Heater Profile: heater_301, Duty Cycle: duty_1
+Sensor config loaded: Sensor 3, Heater Profile: heater_301, Duty Cycle: duty_1
+Sensor config loaded: Sensor 4, Heater Profile: heater_411, Duty Cycle: duty_1
+Sensor config loaded: Sensor 5, Heater Profile: heater_411, Duty Cycle: duty_1
+Sensor config loaded: Sensor 6, Heater Profile: heater_501, Duty Cycle: duty_1
+Sensor config loaded: Sensor 7, Heater Profile: heater_501, Duty Cycle: duty_1
+Dynamic configuration loaded from SD card.
+ets Jul 29 2019 12:21:46
+
+rst:0x1 (POWERON_RESET),boot:0x13 (SPI_FAST_FLASH_BOOT)
+configsip: 0, SPIWP:0xee
+clk_drv:0x00,q_drv:0x00,d_drv:0x00,cs0_drv:0x00,hd_drv:0x00,wp_drv:0x00
+mode:DIO, clock div:1
+load:0x3fff0030,len:1184
+load:0x40078000,len:13260
+load:0x40080400,len:3028
+entry 0x400805e4
+Attempting to load dynamic configuration from SD card...
+---- SD Card Config File Contents ----
+{
+  "configHeader": {
+    "dateCreated_ISO": "2024-07-12T18:24:41.240Z",
+    "appVersion": "2.3.2",
+    "boardType": "board_8",
+    "boardMode": "heater_profile_exploration",
+    "boardLayout": "grouped"
+  },
+  "configBody": {
+    "heaterProfiles": [
+      {
+        "id": "heater_354",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            320,
+            5
+          ],
+          [
+            100,
+            2
+          ],
+          [
+            100,
+            10
+          ],
+          [
+            100,
+            30
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            200,
+            5
+          ],
+          [
+            320,
+            5
+          ],
+          [
+            320,
+            5
+          ],
+          [
+            320,
+            5
+          ]
+        ]
+      },
+      {
+        "id": "heater_301",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            100,
+            2
+          ],
+          [
+            100,
+            41
+          ],
+          [
+            200,
+            2
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            200,
+            14
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            14
+          ],
+          [
+            320,
+            14
+          ],
+          [
+            320,
+            14
+          ]
+        ]
+      },
+      {
+        "id": "heater_411",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            100,
+            43
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            170,
+            43
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            240,
+            2
+          ],
+          [
+            240,
+            20
+          ],
+          [
+            240,
+            21
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            20
+          ],
+          [
+            320,
+            21
+          ]
+        ]
+      },
+      {
+        "id": "heater_501",
+        "timeBase": 140,
+        "temperatureTimeVectors": [
+          [
+            210,
+            24
+          ],
+          [
+            265,
+            2
+          ],
+          [
+            265,
+            22
+          ],
+          [
+            320,
+            2
+          ],
+          [
+            320,
+            22
+          ],
+          [
+            265,
+            24
+          ],
+          [
+            210,
+            24
+          ],
+          [
+            155,
+            24
+          ],
+          [
+            100,
+            24
+          ],
+          [
+            155,
+            24
+          ]
+        ]
+      }
+    ],
+    "dutyCycleProfiles": [
+      {
+        "id": "duty_1",
+        "numberScanningCycles": 1,
+        "numberSleepingCycles": 2
+      }
+    ],
+    "sensorConfigurations": [
+      {
+        "sensorIndex": 0,
+        "heaterProfile": "heater_354",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 1,
+        "heaterProfile": "heater_354",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 2,
+        "heaterProfile": "heater_301",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 3,
+        "heaterProfile": "heater_301",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 4,
+        "heaterProfile": "heater_411",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 5,
+        "heaterProfile": "heater_411",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 6,
+        "heaterProfile": "heater_501",
+        "dutyCycleProfile": "duty_1"
+      },
+      {
+        "sensorIndex": 7,
+        "heaterProfile": "heater_501",
+        "dutyCycleProfile": "duty_1"
+      }
+    ]
+  }
+}
+---- End of Config File ----
+Loaded heater config: heater_354
+Loaded heater config: heater_301
+Loaded heater config: heater_411
+Loaded heater config: heater_501
+Loaded duty cycle profile: duty_1
+Sensor config loaded: Sensor 0, Heater Profile: heater_354, Duty Cycle: duty_1
+Sensor config loaded: Sensor 1, Heater Profile: heater_354, Duty Cycle: duty_1
+Sensor config loaded: Sensor 2, Heater Profile: heater_301, Duty Cycle: duty_1
+Sensor config loaded: Sensor 3, Heater Profile: heater_301, Duty Cycle: duty_1
+Sensor config loaded: Sensor 4, Heater Profile: heater_411, Duty Cycle: duty_1
+Sensor config loaded: Sensor 5, Heater Profile: heater_411, Duty Cycle: duty_1
+Sensor config loaded: Sensor 6, Heater Profile: heater_501, Duty Cycle: duty_1
+Sensor config loaded: Sensor 7, Heater Profile: heater_501, Duty Cycle: duty_1
+Dynamic configuration loaded from SD card.
+Sensor duty cycles initialized (all use 'duty_1').
+Sensor 0: BME68X: OK.
+Sensor 1: BME68X: OK.
+Sensor 2: BME68X: OK.
+Sensor 3: BME68X: OK.
+Sensor 4: BME68X: OK.
+Sensor 5: BME68X: OK.
+Sensor 6: BME68X: OK.
+Sensor 7: BME68X: OK.
+Assigning sensor configurations dynamically...
+Sensor 0 assigned heater profile heater_354
+Sensor 0 assigned duty cycle profile duty_1
+Sensor 1 assigned heater profile heater_354
+Sensor 1 assigned duty cycle profile duty_1
+Sensor 2 assigned heater profile heater_301
+Sensor 2 assigned duty cycle profile duty_1
+Sensor 3 assigned heater profile heater_301
+Sensor 3 assigned duty cycle profile duty_1
+Sensor 4 assigned heater profile heater_411
+Sensor 4 assigned duty cycle profile duty_1
+Sensor 5 assigned heater profile heater_411
+Sensor 5 assigned duty cycle profile duty_1
+Sensor 6 assigned heater profile heater_501
+Sensor 6 assigned duty cycle profile duty_1
+Sensor 7 assigned heater profile heater_501
+Sensor 7 assigned duty cycle profile duty_1
+All BME68X sensors initialized
+WARNING: Unknown command received - 
+Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT, GETDUTY, START_CONFIG_UPLOAD, STATUS_REPORT
+832000.00,10100,15,27.14,99985.77,31.02,6400000.00,10100,15,26.92,0

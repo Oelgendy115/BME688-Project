@@ -1,3 +1,4 @@
+# Import standard libraries and modules for GUI, file operations, data processing, model training, and serial communication.
 import tkinter as tk
 from tkinter import filedialog, messagebox, scrolledtext, ttk, simpledialog
 import os
@@ -17,22 +18,31 @@ import numpy as np
 from statistics import mode
 from sklearn.utils.class_weight import compute_class_weight
 
+# Import custom data processing class
 from dataProcessor import DataProcessor
 
+# Define constants for metrics file and data processing window parameters
 METRICS_FILE = "model_metrics.json"
-
 WINDOW_SIZE = 10
 STRIDE = 1
 MAX_WINDOW = 10
 
 class ModelTrainerGUI:
+    """
+    A GUI application for training a machine learning model, performing predictions,
+    and handling real-time sensor data. Built using tkinter.
+    """
     def __init__(self, master):
+        """
+        Initialize the main GUI window and create all necessary widgets and variables.
+        """
         self.master = master
         self.master.title("Data Classification GUI")
         self.master.geometry("1000x700")
         self.master.columnconfigure(0, weight=1)
         self.master.rowconfigure(0, weight=1)
 
+        # Variables for file paths and application state
         self.raw_data_file = tk.StringVar()
         self.processed_features_file = tk.StringVar()
         self.status = tk.StringVar(value="Status: Idle")
@@ -42,51 +52,55 @@ class ModelTrainerGUI:
         self.model_metrics = None
         self.df_for_training = None
 
+        # Variables for real-time serial communication and prediction control
         self.rt_serial_port = None
         self.rt_connected = False
         self.rt_logging = False
         self.rt_stop_event = threading.Event()
         self.rt_data_buffer = []
-        self.batch_length_var = tk.StringVar(value="5")
+        self.batch_length_var = tk.StringVar(value="12")
         self.time_left_var = tk.StringVar(value="0")
         self.current_prediction = tk.StringVar(value="N/A")
         
+        # Variables for windowing parameters used during feature extraction
         self.window_length_var = tk.StringVar(value=str(WINDOW_SIZE))
         self.stride_length_var = tk.StringVar(value=str(STRIDE))
         self.prediction_stride_length = tk.StringVar(value=str(STRIDE))
 
+        # Create the main frame for the GUI components
         main_frame = tk.Frame(master)
         main_frame.grid(sticky="nsew", padx=10, pady=10)
         main_frame.columnconfigure(0, weight=1)
 
-        ####################################################################
-        # 1) TRAIN MODEL FRAME
-        ####################################################################
+        # ----------------------------- TRAIN MODEL FRAME -----------------------------
+        # Frame for training the model using raw or processed data
         train_model_frame = tk.LabelFrame(main_frame, text="1. Train Model", padx=10, pady=10)
         train_model_frame.grid(row=0, column=0, sticky="ew", pady=5)
         train_model_frame.columnconfigure(0, weight=0)
         train_model_frame.columnconfigure(1, weight=1)
         train_model_frame.columnconfigure(2, weight=0)
 
+        # Widgets to select the raw data file for training
         tk.Label(train_model_frame, text="Raw Data File:").grid(row=0, column=0, sticky="w")
         tk.Entry(train_model_frame, textvariable=self.raw_data_file).grid(row=0, column=1, padx=5, sticky="ew")
         tk.Button(train_model_frame, text="Browse", command=self.browse_file_train).grid(row=0, column=2, padx=5)
 
+        # Widgets to select the processed features file (optional)
         tk.Label(train_model_frame, text="Processed Features File:").grid(row=1, column=0, sticky="w")
         tk.Entry(train_model_frame, textvariable=self.processed_features_file).grid(row=1, column=1, padx=5, sticky="ew")
         tk.Button(train_model_frame, text="Browse", command=self.browse_file_processed_features).grid(row=1, column=2, padx=5)
 
-        # Container frame for window and stride inputs and buttons (data interval is fixed in code)
+        # Frame containing inputs for window length and stride, and buttons for feature extraction and training
         train_options_frame = tk.Frame(train_model_frame)
         train_options_frame.grid(row=2, column=0, columnspan=3, sticky="ew", pady=5)
-        # Left: window and stride inputs
+        # Left sub-frame: window and stride input fields
         ws_frame = tk.Frame(train_options_frame)
         ws_frame.pack(side=tk.LEFT, padx=5)
         tk.Label(ws_frame, text="Window Length:").grid(row=0, column=0, sticky="w")
         tk.Entry(ws_frame, textvariable=self.window_length_var, width=10).grid(row=0, column=1, padx=5, pady=2)
         tk.Label(ws_frame, text="Stride Length:").grid(row=0, column=2, sticky="w")
         tk.Entry(ws_frame, textvariable=self.stride_length_var, width=10).grid(row=0, column=3, padx=5, pady=2)
-        # Right: buttons for extract features and train model
+        # Right sub-frame: buttons for feature extraction and training
         btn_frame = tk.Frame(train_options_frame)
         btn_frame.pack(side=tk.LEFT, padx=5)
         self.extract_features_button = tk.Button(btn_frame, text="Extract Features", command=self.extract_features)
@@ -94,29 +108,31 @@ class ModelTrainerGUI:
         self.train_button = tk.Button(btn_frame, text="Train Model", command=self.train_model)
         self.train_button.grid(row=0, column=1, padx=5, pady=5)
 
+        # Progress bar for training progress feedback
         self.train_progress_bar = ttk.Progressbar(train_model_frame, orient="horizontal", mode="determinate")
         self.train_progress_bar.grid(row=3, column=0, columnspan=3, padx=10, pady=5, sticky="ew")
         self.train_progress_bar["maximum"] = 100
         self.train_progress_bar["value"] = 0
 
-        ####################################################################
-        # 2) MODEL PREDICTION FRAME
-        ####################################################################
+        # --------------------------- MODEL PREDICTION FRAME ---------------------------
+        # Frame for handling predictions using the trained model
         predict_frame = tk.LabelFrame(main_frame, text="2. Model Prediction", padx=10, pady=10)
         predict_frame.grid(row=1, column=0, sticky="ew", pady=5)
         predict_frame.columnconfigure(0, weight=0)
         predict_frame.columnconfigure(1, weight=1)
         predict_frame.columnconfigure(2, weight=0)
 
+        # Widgets to select the input file for prediction
         tk.Label(predict_frame, text="Prediction Input File:").grid(row=0, column=0, sticky="w")
         tk.Entry(predict_frame, textvariable=self.prediction_file).grid(row=0, column=1, padx=5, sticky="ew")
         tk.Button(predict_frame, text="Browse", command=self.browse_file_predict).grid(row=0, column=2, padx=5)
 
+        # Widgets to select the processed features file for prediction (if already available)
         tk.Label(predict_frame, text="Processed Features File:").grid(row=1, column=0, sticky="w")
         tk.Entry(predict_frame, textvariable=self.processed_file_predict).grid(row=1, column=1, padx=5, sticky="ew")
         tk.Button(predict_frame, text="Browse", command=self.browse_file_processed_features_predict).grid(row=1, column=2, padx=5)
 
-        # Container frame for prediction stride length and buttons
+        # Frame containing input for prediction stride and prediction control buttons
         predict_options_frame = tk.Frame(predict_frame)
         predict_options_frame.grid(row=2, column=0, columnspan=3, sticky="ew", pady=5)
         ws_pred_frame = tk.Frame(predict_options_frame)
@@ -133,19 +149,20 @@ class ModelTrainerGUI:
         self.show_metrics_button.grid(row=0, column=2, padx=5, pady=5)
         self.show_metrics_button.config(state=tk.DISABLED)
 
+        # Progress bar for prediction process feedback
         self.predict_progress_bar = ttk.Progressbar(predict_frame, orient="horizontal", mode="determinate")
         self.predict_progress_bar.grid(row=3, column=0, columnspan=3, padx=10, pady=5, sticky="ew")
         self.predict_progress_bar["maximum"] = 100
         self.predict_progress_bar["value"] = 0
 
-        ####################################################################
-        # 3) REAL-TIME PREDICTIONS FRAME
-        ####################################################################
+        # ----------------------- REAL-TIME PREDICTIONS FRAME -------------------------
+        # Frame for connecting to a serial port and handling real-time sensor data predictions
         rt_frame = tk.LabelFrame(main_frame, text="3. Real-time Predictions", padx=10, pady=10)
         rt_frame.grid(row=2, column=0, sticky="ew", pady=5)
         rt_frame.columnconfigure(1, weight=1)
         rt_frame.columnconfigure(4, weight=1)
 
+        # Serial port selection and refresh controls
         tk.Label(rt_frame, text="Select Port:").grid(row=0, column=0, padx=5, pady=5, sticky="e")
         self.rt_port_var = tk.StringVar()
         ports = self.get_serial_ports()
@@ -161,36 +178,48 @@ class ModelTrainerGUI:
         self.rt_connect_button.grid(row=0, column=3, padx=5, pady=5)
         self.rt_disconnect_button = tk.Button(rt_frame, text="Disconnect", command=self.rt_disconnect_serial, state=tk.DISABLED, width=10)
         self.rt_disconnect_button.grid(row=0, column=4, padx=5, pady=5)
+        
+        # Batch length input for real-time prediction and start/stop buttons
         tk.Label(rt_frame, text="Batch Length (sec):").grid(row=1, column=0, padx=5, pady=5, sticky="e")
         tk.Entry(rt_frame, textvariable=self.batch_length_var, width=10).grid(row=1, column=1, padx=5, pady=5, sticky="w")
         self.rt_start_button = tk.Button(rt_frame, text="Start Predictions", command=self.rt_start_predictions, state=tk.DISABLED, width=15)
         self.rt_start_button.grid(row=1, column=2, padx=5, pady=5)
         self.rt_stop_button = tk.Button(rt_frame, text="Stop Predictions", command=self.rt_stop_predictions, state=tk.DISABLED, width=15)
         self.rt_stop_button.grid(row=1, column=3, padx=5, pady=5)
+        
+        # Display remaining seconds in the current batch
         tk.Label(rt_frame, text="Seconds left in batch:").grid(row=2, column=0, padx=5, pady=5, sticky="e")
         tk.Label(rt_frame, textvariable=self.time_left_var, fg="blue").grid(row=2, column=1, padx=5, pady=5, sticky="w")
+        
+        # Frame to display incoming sensor data from the serial port
         rt_data_frame = tk.LabelFrame(rt_frame, text="Sensor Data Output", padx=10, pady=10)
         rt_data_frame.grid(row=3, column=0, columnspan=5, sticky="ew", padx=5, pady=5)
         rt_data_frame.columnconfigure(0, weight=1)
         self.rt_data_display = scrolledtext.ScrolledText(rt_data_frame, wrap=tk.WORD, height=5)
         self.rt_data_display.grid(row=0, column=0, sticky="nsew")
+        
+        # Frame to show the current prediction from real-time data
         pred_frame = tk.LabelFrame(rt_frame, text="Current Smell Prediction", padx=10, pady=10)
         pred_frame.grid(row=4, column=0, columnspan=5, sticky="ew", padx=5, pady=5)
         tk.Label(pred_frame, textvariable=self.current_prediction, fg="blue", font=("Helvetica", 12, "bold")).pack()
 
-        ####################################################################
-        # 4) TERMINAL UPDATES FRAME
-        ####################################################################
+        # --------------------------- TERMINAL UPDATES FRAME --------------------------
+        # Frame for displaying status updates and messages from the application
         status_frame = tk.LabelFrame(main_frame, text="4. Terminal Updates", padx=10, pady=10)
         status_frame.grid(row=3, column=0, sticky="ew", pady=5)
         status_frame.columnconfigure(0, weight=1)
         self.status_label = tk.Label(status_frame, textvariable=self.status, anchor="w")
         self.status_label.grid(row=0, column=0, sticky="w")
 
+        # Set initial status and load any saved model metrics
         self.update_status("Ready")
         self.load_metrics_from_file()
 
     def load_metrics_from_file(self):
+        """
+        Load previously saved model metrics from the METRICS_FILE.
+        If the file exists, update the model metrics and enable the metrics button.
+        """
         if os.path.exists(METRICS_FILE):
             try:
                 with open(METRICS_FILE, "r") as f:
@@ -204,6 +233,9 @@ class ModelTrainerGUI:
                 self.model_metrics = None
 
     def save_metrics_to_file(self, metrics):
+        """
+        Save model metrics to METRICS_FILE after converting numpy arrays to lists.
+        """
         try:
             serializable_metrics = {}
             for key, value in metrics.items():
@@ -217,14 +249,22 @@ class ModelTrainerGUI:
             pass
 
     def browse_file_train(self):
+        """
+        Open a file dialog to select a raw data file for training.
+        Resets the processed features file if a new raw data file is chosen.
+        """
         filename = filedialog.askopenfilename(
             title="Select Raw Data File for Training",
             filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
         )
         if filename:
             self.raw_data_file.set(filename)
+            self.processed_features_file.set("")
 
     def browse_file_processed_features(self):
+        """
+        Open a file dialog to select a processed features file for training.
+        """
         filename = filedialog.askopenfilename(
             title="Select Processed Features File",
             filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
@@ -233,6 +273,9 @@ class ModelTrainerGUI:
             self.processed_features_file.set(filename)
 
     def browse_file_predict(self):
+        """
+        Open a file dialog to select an input file for making predictions.
+        """
         filename = filedialog.askopenfilename(
             title="Select Input File for Prediction",
             filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
@@ -241,6 +284,9 @@ class ModelTrainerGUI:
             self.prediction_file.set(filename)
 
     def browse_file_processed_features_predict(self):
+        """
+        Open a file dialog to select a processed features file for prediction.
+        """
         filename = filedialog.askopenfilename(
             title="Select Processed Features File for Prediction",
             filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
@@ -249,11 +295,14 @@ class ModelTrainerGUI:
             self.processed_file_predict.set(filename)
 
     def extract_features(self):
+        """
+        Extract features from the selected raw data file using DataProcessor.
+        Process the data and save the resulting features as a CSV file.
+        """
         if not self.raw_data_file.get():
             messagebox.showerror("Error", "Please select a raw data file first.")
             return
         try:
-            # Create a DataProcessor (using its default data_interval)
             processor = DataProcessor()
             df = processor.read_csv(self.raw_data_file.get())
             selected_features = list(processor.features.keys())
@@ -295,6 +344,10 @@ class ModelTrainerGUI:
             messagebox.showerror("Error", f"Error during feature extraction: {e}")
 
     def extract_features_predict(self):
+        """
+        Extract features for prediction from the selected prediction input file.
+        Save the processed features as a CSV file.
+        """
         if not self.prediction_file.get():
             messagebox.showerror("Error", "Please select a prediction input file first.")
             return
@@ -340,30 +393,43 @@ class ModelTrainerGUI:
             messagebox.showerror("Error", f"Error during feature extraction: {e}")
 
     def train_model(self):
-        if not self.raw_data_file.get():
-            messagebox.showerror("Error", "Please select a raw data file first.")
+        """
+        Initiate model training using either raw data (after processing) or an already processed file.
+        Spawns a background thread to handle the training process.
+        """
+        if not self.raw_data_file.get() and not self.processed_features_file.get():
+            messagebox.showerror("Error", "Please select a raw data file or a processed features file first.")
             return
-        if os.path.exists(self.model_path):
-            os.remove(self.model_path)
-        if os.path.exists(METRICS_FILE):
-            os.remove(METRICS_FILE)
-        self.model_metrics = None
-        self.update_status("Reading training file...")
-        self.train_progress_bar["value"] = 0
-        self.master.update_idletasks()
-        try:
-            processor = DataProcessor()
-            df_for_training = processor.read_csv(self.raw_data_file.get())
-        except Exception as e:
-            messagebox.showerror("Error reading file", str(e))
-            self.update_status("Idle")
-            return
-        self.update_status("Processing data...")
-        thread = threading.Thread(target=self.run_training_bg, args=(df_for_training,))
-        thread.daemon = True
-        thread.start()
+        if self.raw_data_file.get():
+            self.processed_features_file.set("")
+            try:
+                processor = DataProcessor()
+                df_for_training = processor.read_csv(self.raw_data_file.get())
+            except Exception as e:
+                messagebox.showerror("Error reading file", str(e))
+                self.update_status("Idle")
+                return
+            self.update_status("Processing data...")
+            thread = threading.Thread(target=self.run_training_bg, args=(df_for_training,))
+            thread.daemon = True
+            thread.start()
+        else:
+            try:
+                df_for_training = pd.read_csv(self.processed_features_file.get())
+            except Exception as e:
+                messagebox.showerror("Error reading processed file", str(e))
+                self.update_status("Idle")
+                return
+            self.update_status("Processed file detected. Training model...")
+            thread = threading.Thread(target=self.run_training_bg, args=(df_for_training,))
+            thread.daemon = True
+            thread.start()
 
     def run_training_bg(self, df_for_training):
+        """
+        Background thread for training the model.
+        Processes the data, optionally prompts to save the processed features, trains the model, and saves metrics.
+        """
         try:
             processor = DataProcessor()
             selected_features = list(processor.features.keys())
@@ -396,13 +462,46 @@ class ModelTrainerGUI:
                 self.master.after(0, lambda: messagebox.showwarning("No Data", "No data available to train on."))
                 self.master.after(0, lambda: self.update_status("Idle"))
                 return
-            os.makedirs("Processed_Data", exist_ok=True)
-            processed_file_path = os.path.join("Processed_Data", "processed_data.csv")
-            processed_df.to_csv(processed_file_path, index=False)
-            print(f"Saved processed features to: {processed_file_path}")
+
+            # Prompt to save processed features if not already provided
+            if not self.processed_features_file.get():
+                save_path = filedialog.asksaveasfilename(
+                    title="Save Processed Features",
+                    defaultextension=".csv",
+                    filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
+                )
+                if save_path:
+                    processed_df.to_csv(save_path, index=False)
+                    self.processed_features_file.set(save_path)
+                    print(f"Saved processed features to: {save_path}")
+                else:
+                    self.master.after(0, lambda: messagebox.showinfo("Cancelled", "Save operation cancelled. Proceeding without saving processed features."))
+            else:
+                print(f"Using existing processed features file: {self.processed_features_file.get()}")
+
             feature_cols = [c for c in processed_df.columns if c not in ['Label_Tag', 'Real_Time']]
             X = processed_df[feature_cols]
             y_raw = processed_df['Label_Tag']
+
+            # Check and possibly locate the label encoder file for proper label encoding
+            label_encoder_file = "/Users/omarelgendy/Documents/BME688-Project/BME68X/BME688_Data_Handler/Testing_CSV/out1.csv"
+            if not os.path.exists(label_encoder_file):
+                response = messagebox.askyesno("Label Encoder Not Found",
+                                            f"Label encoder file not found: {label_encoder_file}\nWould you like to locate it?")
+                if response:
+                    new_path = filedialog.askopenfilename(
+                        title="Locate Label Encoder CSV",
+                        filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
+                    )
+                    if new_path:
+                        label_encoder_file = new_path
+                        print(f"Updated label encoder file location: {label_encoder_file}")
+                    else:
+                        messagebox.showinfo("Info", "No label encoder file selected. A new one will be created.")
+                else:
+                    messagebox.showinfo("Info", "No label encoder file selected. A new one will be created.")
+
+            # Encode labels and train the RandomForest model
             self.le = LabelEncoder()
             y = self.le.fit_transform(y_raw)
             clf = RandomForestClassifier(random_state=42)
@@ -413,12 +512,14 @@ class ModelTrainerGUI:
                 total_windows = len(group_df)
                 label_info[label_val] = {'total_windows': total_windows}
             self.model_metrics = {
-                "trained_on": os.path.basename(self.raw_data_file.get()),
+                "trained_on": os.path.basename(self.raw_data_file.get()) if self.raw_data_file.get() else os.path.basename(self.processed_features_file.get()),
                 "label_info": label_info
             }
             self.save_metrics_to_file(self.model_metrics)
             self.master.after(0, lambda: self.train_progress_bar.configure(value=100))
-            self.master.after(0, lambda: self.update_status(f"Training complete. Model saved. Trained on {os.path.basename(self.raw_data_file.get())}"))
+            self.master.after(0, lambda: self.update_status(
+                f"Training complete. Model saved. Trained on {os.path.basename(self.raw_data_file.get()) if self.raw_data_file.get() else os.path.basename(self.processed_features_file.get())}"
+            ))
         except Exception as e:
             self.master.after(0, lambda: messagebox.showerror("Training Error", str(e)))
             self.master.after(0, lambda: self.update_status("Idle"))
@@ -427,6 +528,9 @@ class ModelTrainerGUI:
             self.master.after(0, lambda: self.train_progress_bar.configure(value=0))
 
     def train_window_progress_callback(self, current, total):
+        """
+        Callback function to update the training progress bar based on window processing progress.
+        """
         if total == 0:
             progress = 0
         else:
@@ -434,6 +538,10 @@ class ModelTrainerGUI:
         self.master.after(0, lambda: self.train_progress_bar.configure(value=progress))
 
     def predict_data(self):
+        """
+        Handle prediction requests by loading the model and either using a processed features file or processing raw prediction data.
+        Launches a background thread to execute the prediction.
+        """
         if not self.prediction_file.get() and not self.processed_file_predict.get():
             messagebox.showerror("Error", "Please select an input file for prediction or a processed features file.")
             return
@@ -473,6 +581,10 @@ class ModelTrainerGUI:
             thread.start()
 
     def run_prediction_bg(self, raw_df, clf, le):
+        """
+        Background thread for processing raw prediction data, running the model prediction,
+        and saving the predictions along with metrics if available.
+        """
         try:
             self.master.after(0, lambda: self.update_status("Processing data for prediction..."))
             processor = DataProcessor()
@@ -541,6 +653,10 @@ class ModelTrainerGUI:
             self.master.after(0, lambda: self.predict_progress_bar.configure(value=0))
 
     def run_prediction_bg_processed(self, processed_df, clf, le):
+        """
+        Background thread for running predictions when a processed features file is used.
+        Also updates model metrics if true labels are available.
+        """
         try:
             self.master.after(0, lambda: self.predict_progress_bar.configure(value=80))
             self.master.after(0, lambda: self.update_status("Using processed features file. Running predictions..."))
@@ -590,6 +706,9 @@ class ModelTrainerGUI:
             self.master.after(0, lambda: self.predict_progress_bar.configure(value=0))
 
     def predict_window_progress_callback(self, current, total):
+        """
+        Callback to update prediction progress based on window processing progress.
+        """
         if total == 0:
             progress = 0
         else:
@@ -597,6 +716,9 @@ class ModelTrainerGUI:
         self.master.after(0, lambda: self.predict_progress_bar.configure(value=progress))
 
     def display_metrics(self):
+        """
+        Display saved model metrics (accuracy, classification report, confusion matrix) in a popup window.
+        """
         if not self.model_metrics:
             messagebox.showwarning("No Metrics", "No metrics found. Make a prediction first.")
             return
@@ -611,6 +733,9 @@ class ModelTrainerGUI:
         self.show_results_popup(acc, class_report, cm, title="Prediction Metrics")
 
     def show_results_popup(self, accuracy, class_report, cm, title="Results"):
+        """
+        Create and display a popup window containing the model's prediction metrics.
+        """
         popup = tk.Toplevel(self.master)
         popup.title(title)
         popup.geometry("800x600")
@@ -626,10 +751,16 @@ class ModelTrainerGUI:
         txt.config(state="disabled")
 
     def get_serial_ports(self):
+        """
+        Retrieve a list of available serial ports on the system.
+        """
         ports = serial.tools.list_ports.comports()
         return [port.device for port in ports]
 
     def refresh_rt_ports(self):
+        """
+        Refresh the list of available serial ports and update the dropdown menu.
+        """
         ports = self.get_serial_ports()
         menu = self.rt_port_dropdown["menu"]
         menu.delete(0, "end")
@@ -642,6 +773,10 @@ class ModelTrainerGUI:
         self.update_status(f"Ports refreshed. Available ports: {', '.join(ports) if ports else 'None'}")
 
     def rt_connect_serial(self):
+        """
+        Connect to the selected serial port for real-time predictions.
+        Updates UI elements based on connection status.
+        """
         if not self.rt_port_var.get():
             self.update_status("No serial port selected for real-time predictions.")
             messagebox.showwarning("Warning", "No serial port selected for real-time predictions.")
@@ -659,6 +794,9 @@ class ModelTrainerGUI:
             messagebox.showerror("Connection Error", f"Failed to connect to {self.rt_port_var.get()}.\nError: {str(e)}")
 
     def rt_disconnect_serial(self):
+        """
+        Disconnect from the serial port. Stops real-time predictions if running and resets UI elements.
+        """
         if self.rt_serial_port and self.rt_serial_port.is_open:
             if self.rt_logging:
                 self.rt_stop_predictions()
@@ -672,6 +810,10 @@ class ModelTrainerGUI:
             self.rt_stop_button.config(state=tk.DISABLED)
 
     def rt_start_predictions(self):
+        """
+        Start real-time predictions by sending the start command to the serial device,
+        clearing previous data, and launching a background thread to read serial data.
+        """
         if not self.rt_connected:
             messagebox.showwarning("Warning", "Not connected to any port.")
             return
@@ -692,6 +834,9 @@ class ModelTrainerGUI:
         self.rt_read_thread.start()
 
     def rt_stop_predictions(self):
+        """
+        Stop real-time predictions by sending the stop command to the serial device and updating the UI.
+        """
         self.rt_logging = False
         self.rt_stop_event.set()
         self.rt_stop_button.config(state=tk.DISABLED)
@@ -700,6 +845,9 @@ class ModelTrainerGUI:
         self.rt_send_command("STOP")
 
     def rt_send_command(self, command):
+        """
+        Send a command (e.g., START or STOP) to the serial device.
+        """
         if self.rt_serial_port and self.rt_serial_port.is_open:
             try:
                 self.rt_serial_port.write(f"{command}\n".encode())
@@ -709,13 +857,17 @@ class ModelTrainerGUI:
                 messagebox.showerror("Communication Error", f"Failed to send command.\nError: {str(e)}")
 
     def rt_read_serial_data(self):
+        """
+        Continuously read serial data from the connected device.
+        Buffer and process data in batches, perform predictions on the data,
+        and update the UI with sensor output and current prediction.
+        """
         buffer = ""
         start_time = None
         try:
             batch_length = float(self.batch_length_var.get())
         except ValueError:
             batch_length = 5
-        # Create a DataProcessor using default settings
         processor = DataProcessor()
         selected_features = list(processor.features.keys())
         columns = [
@@ -859,12 +1011,21 @@ class ModelTrainerGUI:
                     break
 
     def update_status(self, message):
+        """
+        Update the status message displayed in the terminal updates frame.
+        """
         self.status.set(message)
 
     def mainloop(self):
+        """
+        Start the main tkinter event loop.
+        """
         self.master.mainloop()
 
 def main():
+    """
+    Entry point of the application. Creates the main window and starts the GUI.
+    """
     root = tk.Tk()
     app = ModelTrainerGUI(root)
     root.mainloop()

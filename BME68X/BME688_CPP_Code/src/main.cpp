@@ -597,8 +597,8 @@ void handleSerialCommands() {
         dataCollectionStarted = false;
       }
     }
-    else if (command.startsWith(CMD_SEC_PREFIX) || command.startsWith("sec_")) {
-      String numStr = command.substring(strlen(CMD_SEC_PREFIX));
+    else if (command.startsWith(CMD_MS_PREFIX) || command.startsWith("ms_")) {
+      String numStr = command.substring(strlen(CMD_MS_PREFIX));
       numStr.trim();
       unsigned long seconds = numStr.toInt();
       if (seconds > 0) {
@@ -622,7 +622,7 @@ void handleSerialCommands() {
     }
     else {
       Serial.println("WARNING: Unknown command received - " + command);
-      Serial.println("Available commands: START, STOP, SEC_num (e.g., SEC_5), GETHEAT, GETDUTY, START_CONFIG_UPLOAD, STATUS_REPORT");
+      Serial.println("Available commands: START, STOP, MS_num (e.g., MS_5000), GETHEAT, GETDUTY, START_CONFIG_UPLOAD, STATUS_REPORT");
     }
   }
 }
