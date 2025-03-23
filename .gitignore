@@ -1,5 +1,0 @@
-# Ignore macOS metadata files
-.DS_Store
-
-# Ignore .gitarribuites (if that's the correct name)
-.gitarribuites
