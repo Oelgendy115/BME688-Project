@@ -6,7 +6,7 @@ import tkinter as tk
 from tkinter import simpledialog
 
 # Define the file path for the label encoder CSV that maps raw labels to class names.
-LABEL_ENCODER_PATH = "/Users/omarelgendy/Documents/BME688-Project/BME68X/BME688_Data_Handler/Label_Encoder.csv"
+LABEL_ENCODER_PATH = "BME68X/BME688_Data_Handler/Label_Encoder.csv"
 
 def make_feature_func(column, func):
     """

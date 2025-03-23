@@ -484,7 +484,7 @@ class ModelTrainerGUI:
             y_raw = processed_df['Label_Tag']
 
             # Check and possibly locate the label encoder file for proper label encoding
-            label_encoder_file = "/Users/omarelgendy/Documents/BME688-Project/BME68X/BME688_Data_Handler/Testing_CSV/out1.csv"
+            label_encoder_file = "BME68X/BME688_Data_Handler/Label_Encoder.csv"
             if not os.path.exists(label_encoder_file):
                 response = messagebox.askyesno("Label Encoder Not Found",
                                             f"Label encoder file not found: {label_encoder_file}\nWould you like to locate it?")

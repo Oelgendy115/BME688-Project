@@ -2,15 +2,19 @@
 
 Welcome to the BME688 Project! This guide will walk you through cloning the repository from GitHub, understanding the directory structure, and running the installer to set up your environment.
 
-## 1. Clone the Repository
+## 1. Clone or Download the Repository
 
-First, clone the repository to your local machine. Open your Terminal (or Git Bash on Windows) and run:
+To get started, you can either clone the repository using Git or download it as a ZIP file:
 
-```bash
-git clone https://github.com/Oelgendy115/BME688-Project.git
-```
+- **Clone via Git:**  
+  Open your Terminal (or Git Bash on Windows) and run:
+  
+  git clone https://github.com/yourusername/BME688-Project.git
+  
+  This will create a folder named "BME688-Project" containing all the project files.
 
-This will create a folder named `BME688-Project` containing all the project files.
+- **Download as ZIP:**  
+  Alternatively, go to the GitHub repository page, click the green "Code" button, and select "Download ZIP". Once downloaded, unzip the file into your desired location.
 
 ## 2. Directory Structure
 
@@ -85,6 +89,5 @@ After installation:
 - Ensure that Python (and pip) are installed on your system.
 - If you need to update dependencies later, simply re-run the installer.
 - The installer sets the working directory to the project root automatically, so the relative paths will work correctly on both Windows and macOS.
-- For any issues or questions, please open an issue on the GitHub repository.
 
 Enjoy using the BME688 Project!
