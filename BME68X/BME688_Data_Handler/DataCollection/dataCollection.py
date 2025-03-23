@@ -210,9 +210,10 @@ class DataLoggerGUI:
         self.send_new_config_button.grid(row=0, column=3, padx=5, pady=5)
         
         tk.Label(controller_frame, text="Sampling Period (ms):").grid(row=0, column=4, padx=5, pady=5, sticky="e")
-        self.sampling_rate_var = tk.StringVar(value="3")
+        self.sampling_rate_var = tk.StringVar(value="3000")
         self.sampling_entry = tk.Entry(controller_frame, textvariable=self.sampling_rate_var, width=10)
         self.sampling_entry.grid(row=0, column=5, padx=5, pady=5, sticky="w")
+        self.sampling_entry.bind("<Return>", self.set_sampling_rate)
 
         # ----- Plotting Area -----
         self.plotting_frame = tk.LabelFrame(self.master, text="Plotting", padx=10, pady=10)
@@ -570,11 +571,13 @@ class DataLoggerGUI:
 
                         if self.get_heat_response_pending:
                             self.heater_profiles_buffer.append(line)
-                            if "Heater profiles retrieval complete." in line:
+                            # Adjusted check: look for "retrieval complete" in the line.
+                            if "retrieval complete" in line.lower():
                                 self.get_heat_response_pending = False
                                 heater_profiles_str = "\n".join(self.heater_profiles_buffer)
-                                self.show_heater_profiles(heater_profiles_str)
-                                self.update_status("Received Heater Profiles.")
+                                # Schedule the GUI update on the main thread
+                                self.master.after(0, lambda: self.show_heater_profiles(heater_profiles_str))
+                                self.master.after(0, lambda: self.update_status("Received Heater Profiles."))
                         else:
                             if self.logging:
                                 csv_reader = csv.reader(StringIO(line))
@@ -590,8 +593,8 @@ class DataLoggerGUI:
                             else:
                                 self.data_queue.put(line)
             except serial.SerialException:
-                self.update_status("Serial Communication Error: Connection lost.")
-                messagebox.showerror("Communication Error", "Serial Communication Error: Connection lost.")
+                self.master.after(0, lambda: self.update_status("Serial Communication Error: Connection lost."))
+                self.master.after(0, lambda: messagebox.showerror("Communication Error", "Serial Communication Error: Connection lost."))
                 break
             except UnicodeDecodeError:
                 continue
@@ -702,35 +705,31 @@ class DataLoggerGUI:
 
     def set_sampling_rate(self, event):
         """
-        Validates and sets the sampling rate based on user input.
-        
-        Args:
-            event: The event that triggered the sampling rate change.
+        Validates and sets the sampling rate (in ms) based on user input.
         """
         freq = self.sampling_rate_var.get().strip()
         if not freq:
-            self.update_status("Please enter a Sampling Period number in seconds.")
-            messagebox.showwarning("Input Error", "Please enter a Sampling Period number in seconds.")
+            self.update_status("Please enter a Sampling Period in milliseconds.")
+            messagebox.showwarning("Input Error", "Please enter a Sampling Period in milliseconds.")
             return
         try:
-            freq_sec = float(freq)
-            if freq_sec <= 0:
-                self.update_status("Sampling Period must be greater than zero seconds.")
-                messagebox.showwarning("Input Error", "Sampling Period must be greater than zero seconds.")
+            freq_ms = int(float(freq))
+            if freq_ms <= 0:
+                self.update_status("Sampling Period must be greater than zero.")
+                messagebox.showwarning("Input Error", "Sampling Period must be greater than zero.")
                 return
-            freq_msec = int(freq_sec * 1000)
 
             if self.logging:
                 if not self.confirm_action("Logging is active. Do you want to stop logging to set the Sampling Period?"):
                     return
                 self.stop_logging()
-                self.master.after(500, lambda: self.send_sampling_command(freq_msec))
+                self.master.after(500, lambda: self.send_sampling_command(freq_ms))
             else:
                 if not self.serial_port or not self.serial_port.is_open:
                     self.update_status("Serial port is not connected.")
                     messagebox.showwarning("Warning", "Serial port is not connected.")
                     return
-                self.send_sampling_command(freq_msec)
+                self.send_sampling_command(freq_ms)
         except ValueError:
             self.update_status("Please enter a valid number for Sampling Period.")
             messagebox.showerror("Input Error", "Please enter a valid number for Sampling Period.")
@@ -744,7 +743,7 @@ class DataLoggerGUI:
         """
         command = f"MS_{msec}"
         self.send_command(command)
-        self.update_status(f"Sampling Period set to {msec / 1000} seconds.")
+        self.update_status(f"Sampling Period set to {msec} ms.")
 
     def update_plot(self, immediate=False):
         """
