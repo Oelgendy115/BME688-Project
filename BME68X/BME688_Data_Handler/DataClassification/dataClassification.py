@@ -234,32 +234,36 @@ class ModelTrainerGUI:
 
     def save_metrics_to_file(self, metrics):
         """
-        Save model metrics to METRICS_FILE after converting numpy arrays to lists.
+        Save model metrics to a file named model_metrics.json in the same directory as this script.
         """
         try:
+            metrics_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_metrics.json")
             serializable_metrics = {}
             for key, value in metrics.items():
                 if isinstance(value, np.ndarray):
                     serializable_metrics[key] = value.tolist()
                 else:
                     serializable_metrics[key] = value
-            with open(METRICS_FILE, "w") as f:
+            with open(metrics_file, "w") as f:
                 json.dump(serializable_metrics, f, indent=4)
-        except Exception:
-            pass
+        except Exception as e:
+            print("Error saving metrics to file:", e)
+
 
     def browse_file_train(self):
         """
         Open a file dialog to select a raw data file for training.
-        Resets the processed features file if a new raw data file is chosen.
+        If a new raw file is chosen, clear both processed file paths.
         """
         filename = filedialog.askopenfilename(
             title="Select Raw Data File for Training",
             filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
         )
         if filename:
+            if filename != self.raw_data_file.get():
+                self.processed_features_file.set("")
+                self.processed_file_predict.set("")
             self.raw_data_file.set(filename)
-            self.processed_features_file.set("")
 
     def browse_file_processed_features(self):
         """
@@ -272,16 +276,6 @@ class ModelTrainerGUI:
         if filename:
             self.processed_features_file.set(filename)
 
-    def browse_file_predict(self):
-        """
-        Open a file dialog to select an input file for making predictions.
-        """
-        filename = filedialog.askopenfilename(
-            title="Select Input File for Prediction",
-            filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
-        )
-        if filename:
-            self.prediction_file.set(filename)
 
     def browse_file_processed_features_predict(self):
         """
@@ -294,66 +288,165 @@ class ModelTrainerGUI:
         if filename:
             self.processed_file_predict.set(filename)
 
+    def browse_file_predict(self):
+        """
+        Open a file dialog to select a raw data file for prediction.
+        If a new raw file is chosen, clear both processed file paths.
+        """
+        filename = filedialog.askopenfilename(
+            title="Select Input File for Prediction",
+            filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
+        )
+        if filename:
+            if filename != self.prediction_file.get():
+                self.processed_features_file.set("")
+                self.processed_file_predict.set("")
+            self.prediction_file.set(filename)
+
     def extract_features(self):
         """
-        Extract features from the selected raw data file using DataProcessor.
-        Process the data and save the resulting features as a CSV file.
+        Extract features from the selected raw data file for training.
+        This now spawns a background thread so that the progress bar updates immediately.
         """
         if not self.raw_data_file.get():
             messagebox.showerror("Error", "Please select a raw data file first.")
             return
-        try:
-            processor = DataProcessor()
-            df = processor.read_csv(self.raw_data_file.get())
-            selected_features = list(processor.features.keys())
-            try:
-                window_length = int(self.window_length_var.get())
-            except ValueError:
-                window_length = WINDOW_SIZE
-            try:
-                stride = int(self.stride_length_var.get())
-            except ValueError:
-                stride = STRIDE
-            lower_cols = [col.lower() for col in df.columns]
-            if ('timestamp_ms' in lower_cols) and ('sensor1_temperature_deg_c' in lower_cols):
-                processed_data = processor.process_data(
-                    df,
-                    window_size=window_length,
-                    stride=stride,
-                    selected_features=selected_features,
-                    progress_callback=None
-                )
-                processed_df = pd.DataFrame(processed_data)
-            else:
-                processed_df = df.copy()
-            if processed_df.empty:
-                messagebox.showwarning("No Data", "No data available after processing.")
-                return
-            save_path = filedialog.asksaveasfilename(
-                title="Save Extracted Features",
-                defaultextension=".csv",
-                filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
-            )
-            if save_path:
-                processed_df.to_csv(save_path, index=False)
-                messagebox.showinfo("Success", f"Extracted features saved to {save_path}")
-                self.processed_features_file.set(save_path)
-            else:
-                messagebox.showinfo("Cancelled", "Save operation cancelled.")
-        except Exception as e:
-            messagebox.showerror("Error", f"Error during feature extraction: {e}")
+        save_path = filedialog.asksaveasfilename(
+            title="Save Extracted Features",
+            defaultextension=".csv",
+            filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
+        )
+        if not save_path:
+            messagebox.showinfo("Cancelled", "Save operation cancelled.")
+            return
+        thread = threading.Thread(target=self.run_extraction_bg, args=(self.raw_data_file.get(), save_path))
+        thread.daemon = True
+        thread.start()
 
     def extract_features_predict(self):
         """
-        Extract features for prediction from the selected prediction input file.
-        Save the processed features as a CSV file.
+        Extract features for prediction from the selected input file.
+        This now spawns a background thread so that the progress bar updates immediately.
         """
         if not self.prediction_file.get():
             messagebox.showerror("Error", "Please select a prediction input file first.")
             return
+        save_path = filedialog.asksaveasfilename(
+            title="Save Extracted Features",
+            defaultextension=".csv",
+            filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
+        )
+        if not save_path:
+            messagebox.showinfo("Cancelled", "Save operation cancelled.")
+            return
+        thread = threading.Thread(target=self.run_extraction_bg_predict, args=(self.prediction_file.get(), save_path))
+        thread.daemon = True
+        thread.start()
+
+    def train_model(self):
+        """
+        Train the model according to the following rules:
+        - If both a raw file and a processed file are set, skip processing and use the processed file.
+        - If only a processed file is set, skip processing and use that file.
+        - If only a raw file is set, ask the user where to save processed features, process and save them, then train.
+        - If no file is set, show an error.
+        """
+        raw_path = self.raw_data_file.get()
+        proc_path = self.processed_features_file.get()
+
+        # 1) Neither raw nor processed
+        if not raw_path and not proc_path:
+            messagebox.showerror("Error", "Please select a raw data file or a processed features file first.")
+            return
+
+        # 2) Both raw and processed => skip re-processing; just train on processed
+        if raw_path and proc_path:
+            self.update_status("Using existing processed file. Skipping re-processing...")
+            try:
+                df_for_training = pd.read_csv(proc_path)
+            except Exception as e:
+                messagebox.showerror("Error reading processed file", str(e))
+                self.update_status("Idle")
+                return
+            # Spawn background thread to train on the processed DataFrame
+            thread = threading.Thread(target=self.run_training_bg, args=(df_for_training,))
+            thread.daemon = True
+            thread.start()
+            return
+
+        # 3) Only processed => train on processed
+        if proc_path and not raw_path:
+            self.update_status("No raw file selected. Training on existing processed file...")
+            try:
+                df_for_training = pd.read_csv(proc_path)
+            except Exception as e:
+                messagebox.showerror("Error reading processed file", str(e))
+                self.update_status("Idle")
+                return
+            thread = threading.Thread(target=self.run_training_bg, args=(df_for_training,))
+            thread.daemon = True
+            thread.start()
+            return
+
+        # 4) Only raw => ask user to save processed, then process & train
+        if raw_path and not proc_path:
+            save_path = filedialog.asksaveasfilename(
+                title="Save Processed Features for Training",
+                defaultextension=".csv",
+                filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
+            )
+            if not save_path:
+                messagebox.showinfo("Cancelled", "Operation cancelled. No processed file was created.")
+                return
+            self.processed_features_file.set(save_path)
+
+            # Process the raw file, save to the chosen path, then train
+            try:
+                processor = DataProcessor()
+                df_raw = processor.read_csv(raw_path)
+                selected_features = list(processor.features.keys())
+                try:
+                    window_length = int(self.window_length_var.get())
+                except ValueError:
+                    window_length = WINDOW_SIZE
+                try:
+                    stride = int(self.stride_length_var.get())
+                except ValueError:
+                    stride = STRIDE
+
+                self.update_status("Processing raw file for training...")
+                processed_data = processor.process_data(
+                    df_raw,
+                    window_size=window_length,
+                    stride=stride,
+                    selected_features=selected_features
+                )
+                processed_df = pd.DataFrame(processed_data)
+                if processed_df.empty:
+                    messagebox.showwarning("No Data", "No data available to train on after processing.")
+                    self.update_status("Idle")
+                    return
+                processed_df.to_csv(save_path, index=False)
+                self.update_status(f"Features saved to {save_path}. Starting training...")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error processing raw file: {e}")
+                self.update_status("Idle")
+                return
+
+            # Now spawn background thread to train on processed_df
+            thread = threading.Thread(target=self.run_training_bg, args=(processed_df,))
+            thread.daemon = True
+            thread.start()
+    def run_extraction_bg_predict(self, raw_file, save_path):
+        """
+        Background thread function for extracting features from a raw file for prediction.
+        Updates the prediction progress bar using the prediction progress callback.
+        """
         try:
+            self.master.after(0, lambda: self.predict_progress_bar.configure(value=0))
+            self.master.after(0, lambda: self.update_status("Extracting features for prediction..."))
             processor = DataProcessor()
-            df = processor.read_csv(self.prediction_file.get())
+            df = processor.read_csv(raw_file)
             selected_features = list(processor.features.keys())
             try:
                 window_length = int(self.window_length_var.get())
@@ -370,68 +463,34 @@ class ModelTrainerGUI:
                     window_size=window_length,
                     stride=stride,
                     selected_features=selected_features,
-                    progress_callback=None
+                    progress_callback=self.predict_window_progress_callback
                 )
                 processed_df = pd.DataFrame(processed_data)
             else:
                 processed_df = df.copy()
             if processed_df.empty:
-                messagebox.showwarning("No Data", "No data available after processing.")
+                self.master.after(0, lambda: messagebox.showwarning("No Data", "No data available after processing."))
+                self.master.after(0, lambda: self.update_status("Idle"))
                 return
-            save_path = filedialog.asksaveasfilename(
-                title="Save Extracted Features",
-                defaultextension=".csv",
-                filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
-            )
-            if save_path:
-                processed_df.to_csv(save_path, index=False)
-                messagebox.showinfo("Success", f"Extracted features saved to {save_path}")
-                self.processed_file_predict.set(save_path)
-            else:
-                messagebox.showinfo("Cancelled", "Save operation cancelled.")
+            processed_df.to_csv(save_path, index=False)
+            self.master.after(0, lambda: messagebox.showinfo("Success", f"Extracted features saved to {save_path}"))
+            self.processed_file_predict.set(save_path)
+            self.master.after(0, lambda: self.predict_progress_bar.configure(value=100))
+            self.master.after(0, lambda: self.update_status("Feature extraction for prediction complete."))
         except Exception as e:
-            messagebox.showerror("Error", f"Error during feature extraction: {e}")
+            self.master.after(0, lambda: messagebox.showerror("Error", f"Error during feature extraction for prediction: {e}"))
+            self.master.after(0, lambda: self.update_status("Idle"))
 
-    def train_model(self):
+    def run_extraction_bg(self, raw_file, save_path):
         """
-        Initiate model training using either raw data (after processing) or an already processed file.
-        Spawns a background thread to handle the training process.
-        """
-        if not self.raw_data_file.get() and not self.processed_features_file.get():
-            messagebox.showerror("Error", "Please select a raw data file or a processed features file first.")
-            return
-        if self.raw_data_file.get():
-            self.processed_features_file.set("")
-            try:
-                processor = DataProcessor()
-                df_for_training = processor.read_csv(self.raw_data_file.get())
-            except Exception as e:
-                messagebox.showerror("Error reading file", str(e))
-                self.update_status("Idle")
-                return
-            self.update_status("Processing data...")
-            thread = threading.Thread(target=self.run_training_bg, args=(df_for_training,))
-            thread.daemon = True
-            thread.start()
-        else:
-            try:
-                df_for_training = pd.read_csv(self.processed_features_file.get())
-            except Exception as e:
-                messagebox.showerror("Error reading processed file", str(e))
-                self.update_status("Idle")
-                return
-            self.update_status("Processed file detected. Training model...")
-            thread = threading.Thread(target=self.run_training_bg, args=(df_for_training,))
-            thread.daemon = True
-            thread.start()
-
-    def run_training_bg(self, df_for_training):
-        """
-        Background thread for training the model.
-        Processes the data, optionally prompts to save the processed features, trains the model, and saves metrics.
+        Background thread function for extracting features from a raw file for training.
+        Updates the progress bar using the training progress callback.
         """
         try:
+            self.master.after(0, lambda: self.train_progress_bar.configure(value=0))
+            self.master.after(0, lambda: self.update_status("Extracting features..."))
             processor = DataProcessor()
+            df = processor.read_csv(raw_file)
             selected_features = list(processor.features.keys())
             try:
                 window_length = int(self.window_length_var.get())
@@ -441,91 +500,76 @@ class ModelTrainerGUI:
                 stride = int(self.stride_length_var.get())
             except ValueError:
                 stride = STRIDE
-            lower_cols = [col.lower() for col in df_for_training.columns]
+            lower_cols = [col.lower() for col in df.columns]
             if ('timestamp_ms' in lower_cols) and ('sensor1_temperature_deg_c' in lower_cols):
-                self.master.after(0, lambda: self.update_status("Raw file detected. Processing data..."))
                 processed_data = processor.process_data(
-                    df_for_training,
+                    df,
                     window_size=window_length,
                     stride=stride,
                     selected_features=selected_features,
                     progress_callback=self.train_window_progress_callback
                 )
-                self.master.after(0, lambda: self.train_progress_bar.configure(value=80))
-                self.master.after(0, lambda: self.update_status("Data processing completed. Training model..."))
                 processed_df = pd.DataFrame(processed_data)
             else:
-                self.master.after(0, lambda: self.update_status("Processed file detected. Skipping window processing..."))
-                processed_df = df_for_training.copy()
-                self.master.after(0, lambda: self.train_progress_bar.configure(value=80))
+                processed_df = df.copy()
             if processed_df.empty:
-                self.master.after(0, lambda: messagebox.showwarning("No Data", "No data available to train on."))
+                self.master.after(0, lambda: messagebox.showwarning("No Data", "No data available after processing."))
                 self.master.after(0, lambda: self.update_status("Idle"))
                 return
+            processed_df.to_csv(save_path, index=False)
+            self.master.after(0, lambda: messagebox.showinfo("Success", f"Extracted features saved to {save_path}"))
+            self.processed_features_file.set(save_path)
+            self.master.after(0, lambda: self.train_progress_bar.configure(value=100))
+            self.master.after(0, lambda: self.update_status("Feature extraction complete."))
+        except Exception as e:
+            self.master.after(0, lambda: messagebox.showerror("Error", f"Error during feature extraction: {e}"))
+            self.master.after(0, lambda: self.update_status("Idle"))
 
-            # Prompt to save processed features if not already provided
-            if not self.processed_features_file.get():
-                save_path = filedialog.asksaveasfilename(
-                    title="Save Processed Features",
-                    defaultextension=".csv",
-                    filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
-                )
-                if save_path:
-                    processed_df.to_csv(save_path, index=False)
-                    self.processed_features_file.set(save_path)
-                    print(f"Saved processed features to: {save_path}")
-                else:
-                    self.master.after(0, lambda: messagebox.showinfo("Cancelled", "Save operation cancelled. Proceeding without saving processed features."))
-            else:
-                print(f"Using existing processed features file: {self.processed_features_file.get()}")
+    def run_training_bg(self, df_for_training):
+        """
+        Background thread that trains the model on a DataFrame that is already processed.
+        Saves metrics and updates the UI on completion.
+        """
+        try:
+            self.master.after(0, lambda: self.train_progress_bar.configure(value=0))
+            self.master.after(0, lambda: self.update_status("Training model..."))
 
-            feature_cols = [c for c in processed_df.columns if c not in ['Label_Tag', 'Real_Time']]
-            X = processed_df[feature_cols]
-            y_raw = processed_df['Label_Tag']
+            feature_cols = [c for c in df_for_training.columns if c not in ['Label_Tag', 'Real_Time']]
+            if not feature_cols or 'Label_Tag' not in df_for_training.columns:
+                raise ValueError("Processed DataFrame must contain 'Label_Tag' and some feature columns.")
 
-            # Check and possibly locate the label encoder file for proper label encoding
-            label_encoder_file = "BME68X/BME688_Data_Handler/Label_Encoder.csv"
-            if not os.path.exists(label_encoder_file):
-                response = messagebox.askyesno("Label Encoder Not Found",
-                                            f"Label encoder file not found: {label_encoder_file}\nWould you like to locate it?")
-                if response:
-                    new_path = filedialog.askopenfilename(
-                        title="Locate Label Encoder CSV",
-                        filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
-                    )
-                    if new_path:
-                        label_encoder_file = new_path
-                        print(f"Updated label encoder file location: {label_encoder_file}")
-                    else:
-                        messagebox.showinfo("Info", "No label encoder file selected. A new one will be created.")
-                else:
-                    messagebox.showinfo("Info", "No label encoder file selected. A new one will be created.")
-
-            # Encode labels and train the RandomForest model
+            X = df_for_training[feature_cols]
+            # Strip whitespace from labels for consistency.
+            y_raw = df_for_training['Label_Tag'].astype(str).str.strip()
             self.le = LabelEncoder()
             y = self.le.fit_transform(y_raw)
             clf = RandomForestClassifier(random_state=42)
             clf.fit(X, y)
+
+            # Save model.
             dump((clf, self.le), self.model_path)
+
+            # Save simple metrics (e.g., number of windows per label).
             label_info = {}
-            for label_val, group_df in processed_df.groupby('Label_Tag'):
+            for label_val, group_df in df_for_training.groupby('Label_Tag'):
                 total_windows = len(group_df)
                 label_info[label_val] = {'total_windows': total_windows}
+
             self.model_metrics = {
-                "trained_on": os.path.basename(self.raw_data_file.get()) if self.raw_data_file.get() else os.path.basename(self.processed_features_file.get()),
+                "trained_on": os.path.basename(self.processed_features_file.get()),
                 "label_info": label_info
             }
             self.save_metrics_to_file(self.model_metrics)
+
             self.master.after(0, lambda: self.train_progress_bar.configure(value=100))
-            self.master.after(0, lambda: self.update_status(
-                f"Training complete. Model saved. Trained on {os.path.basename(self.raw_data_file.get()) if self.raw_data_file.get() else os.path.basename(self.processed_features_file.get())}"
-            ))
+            self.master.after(0, lambda: self.update_status("Training complete. Model saved."))
         except Exception as e:
             self.master.after(0, lambda: messagebox.showerror("Training Error", str(e)))
             self.master.after(0, lambda: self.update_status("Idle"))
         finally:
             time.sleep(0.5)
             self.master.after(0, lambda: self.train_progress_bar.configure(value=0))
+
 
     def train_window_progress_callback(self, current, total):
         """
@@ -539,163 +583,191 @@ class ModelTrainerGUI:
 
     def predict_data(self):
         """
-        Handle prediction requests by loading the model and either using a processed features file or processing raw prediction data.
-        Launches a background thread to execute the prediction.
+        Make predictions according to the following rules:
+        - If both a raw file (prediction) and a processed file are set, skip re-processing and use the processed file.
+        - If only a processed file is set, skip processing and use that file.
+        - If only a raw file is set, ask where to save processed features, process and save them, then predict.
+        - If no file is set, show an error.
         """
-        if not self.prediction_file.get() and not self.processed_file_predict.get():
+        raw_pred_path = self.prediction_file.get()
+        proc_pred_path = self.processed_file_predict.get()
+
+        # 1) Neither raw nor processed
+        if not raw_pred_path and not proc_pred_path:
             messagebox.showerror("Error", "Please select an input file for prediction or a processed features file.")
             return
-        self.predict_progress_bar["value"] = 0
-        self.update_status("Preparing to predict...")
-        self.master.update_idletasks()
-        if not os.path.exists(self.model_path):
-            messagebox.showerror("Error", "No trained model found. Please train a model first.")
-            self.update_status("Idle")
-            return
-        try:
-            clf, le = load(self.model_path)
-        except Exception as e:
-            messagebox.showerror("Error", f"Failed to load model: {e}")
-            self.update_status("Idle")
-            return
-        if self.processed_file_predict.get():
+
+        # 2) Both raw and processed => skip re-processing
+        if raw_pred_path and proc_pred_path:
+            self.update_status("Using existing processed file for prediction. Skipping re-processing...")
             try:
-                processed_df = pd.read_csv(self.processed_file_predict.get())
+                processed_df = pd.read_csv(proc_pred_path)
             except Exception as e:
                 messagebox.showerror("Error", f"Error reading processed features file: {e}")
                 self.update_status("Idle")
                 return
-            thread = threading.Thread(target=self.run_prediction_bg_processed, args=(processed_df, clf, le))
+            thread = threading.Thread(target=self.run_prediction_bg_processed, args=(processed_df,))
             thread.daemon = True
             thread.start()
-        else:
+            return
+
+        # 3) Only processed => predict using it
+        if proc_pred_path and not raw_pred_path:
+            self.update_status("No raw file selected. Predicting on existing processed file...")
             try:
-                processor = DataProcessor()
-                raw_df = processor.read_csv(self.prediction_file.get())
+                processed_df = pd.read_csv(proc_pred_path)
             except Exception as e:
-                messagebox.showerror("Error", f"Error reading prediction file: {e}")
+                messagebox.showerror("Error", f"Error reading processed features file: {e}")
                 self.update_status("Idle")
                 return
-            thread = threading.Thread(target=self.run_prediction_bg, args=(raw_df, clf, le))
+            thread = threading.Thread(target=self.run_prediction_bg_processed, args=(processed_df,))
             thread.daemon = True
             thread.start()
+            return
 
-    def run_prediction_bg(self, raw_df, clf, le):
-        """
-        Background thread for processing raw prediction data, running the model prediction,
-        and saving the predictions along with metrics if available.
-        """
-        try:
-            self.master.after(0, lambda: self.update_status("Processing data for prediction..."))
-            processor = DataProcessor()
-            selected_features = list(processor.features.keys())
-            try:
-                window_length = int(self.window_length_var.get())
-            except ValueError:
-                window_length = WINDOW_SIZE
-            try:
-                stride = int(self.prediction_stride_length.get())
-            except ValueError:
-                stride = STRIDE
-            processed_data = processor.process_data(
-                raw_df,
-                window_size=window_length,
-                stride=stride,
-                selected_features=selected_features,
-                progress_callback=self.predict_window_progress_callback
-            )
-            self.master.after(0, lambda: self.predict_progress_bar.configure(value=80))
-            self.master.after(0, lambda: self.update_status("Data processed. Running predictions..."))
-            processed_df = pd.DataFrame(processed_data)
-            if processed_df.empty:
-                self.master.after(0, lambda: messagebox.showwarning("No Data", "No data available for prediction after processing."))
-                self.master.after(0, lambda: self.update_status("Idle"))
-                return
-            feature_cols = [c for c in processed_df.columns if c not in ['Label_Tag', 'Predicted_Label', 'Real_Time']]
-            X_pred = processed_df[feature_cols]
-            y_pred_numeric = clf.predict(X_pred)
-            predictions = le.inverse_transform(y_pred_numeric)
-            processed_df['Predicted_Label'] = predictions
-            if 'Label_Tag' in processed_df.columns:
-                try:
-                    y_true_text = processed_df['Label_Tag']
-                    y_true_numeric = le.transform(y_true_text)
-                    acc = accuracy_score(y_true_numeric, y_pred_numeric)
-                    y_true_inversed = le.inverse_transform(y_true_numeric)
-                    class_report = classification_report(y_true_inversed, predictions, zero_division=0)
-                    cm = confusion_matrix(y_true_inversed, predictions, labels=le.classes_)
-                    if not self.model_metrics:
-                        self.model_metrics = {}
-                    self.model_metrics['accuracy'] = acc
-                    self.model_metrics['report'] = class_report
-                    self.model_metrics['cm'] = cm
-                    self.save_metrics_to_file(self.model_metrics)
-                    self.master.after(0, lambda: self.show_metrics_button.config(state=tk.NORMAL))
-                except Exception:
-                    pass
+        # 4) Only raw => ask user to save processed, then process & predict
+        if raw_pred_path and not proc_pred_path:
             save_path = filedialog.asksaveasfilename(
-                title="Save Predictions",
+                title="Save Processed Features for Prediction",
                 defaultextension=".csv",
                 filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
             )
-            if save_path:
-                processed_df.to_csv(save_path, index=False)
-                self.master.after(0, lambda: messagebox.showinfo("Success", f"Predictions saved to {save_path}"))
-            else:
-                self.master.after(0, lambda: messagebox.showinfo("Cancelled", "Save operation cancelled."))
-            self.master.after(0, lambda: self.predict_progress_bar.configure(value=100))
-            self.master.after(0, lambda: self.update_status("Prediction complete!"))
-        except Exception as e:
-            self.master.after(0, lambda: messagebox.showerror("Prediction Error", f"Error during prediction: {e}"))
-            self.master.after(0, lambda: self.update_status("Idle"))
-        finally:
-            time.sleep(0.5)
-            self.master.after(0, lambda: self.predict_progress_bar.configure(value=0))
+            if not save_path:
+                messagebox.showinfo("Cancelled", "Operation cancelled. No processed file was created.")
+                return
+            self.processed_file_predict.set(save_path)
 
-    def run_prediction_bg_processed(self, processed_df, clf, le):
+            # Process the raw file, save to the chosen path, then predict
+            try:
+                processor = DataProcessor()
+                df_raw = processor.read_csv(raw_pred_path)
+                selected_features = list(processor.features.keys())
+                try:
+                    window_length = int(self.window_length_var.get())
+                except ValueError:
+                    window_length = WINDOW_SIZE
+                try:
+                    stride = int(self.prediction_stride_length.get())
+                except ValueError:
+                    stride = STRIDE
+
+                self.update_status("Processing raw file for prediction...")
+                processed_data = processor.process_data(
+                    df_raw,
+                    window_size=window_length,
+                    stride=stride,
+                    selected_features=selected_features,
+                    progress_callback=self.predict_window_progress_callback
+                )
+                self.master.after(0, lambda: self.predict_progress_bar.configure(value=80))
+
+                processed_df = pd.DataFrame(processed_data)
+                if processed_df.empty:
+                    messagebox.showwarning("No Data", "No data available for prediction after processing.")
+                    self.update_status("Idle")
+                    return
+
+                processed_df.to_csv(save_path, index=False)
+                self.update_status(f"Features saved to {save_path}. Starting prediction...")
+            except Exception as e:
+                messagebox.showerror("Error", f"Error processing raw prediction file: {e}")
+                self.update_status("Idle")
+                return
+
+            # Now spawn background thread to run prediction on processed_df
+            thread = threading.Thread(target=self.run_prediction_bg_processed, args=(processed_df,))
+            thread.daemon = True
+            thread.start()
+
+    def run_prediction_bg(self, processed_df):
         """
-        Background thread for running predictions when a processed features file is used.
-        Also updates model metrics if true labels are available.
+        (Optional) If you decide you no longer want a separate path for raw in run_prediction_bg,
+        you can remove references to re-processing here.
+        This function is not strictly needed if you always call run_prediction_bg_processed 
+        with a processed DataFrame. 
+        """
+        pass  # You can delete or leave a no-op if you prefer.
+
+    def run_prediction_bg_processed(self, processed_df):
+        """
+        Background thread for running predictions on an already-processed DataFrame.
+        The predictions are automatically saved back to the processed file without prompting the user.
+        Also computes and saves prediction metrics into model_metrics.json.
+        If ground truth is not available or an error occurs during metrics computation,
+        a default metrics dictionary is stored.
         """
         try:
             self.master.after(0, lambda: self.predict_progress_bar.configure(value=80))
             self.master.after(0, lambda: self.update_status("Using processed features file. Running predictions..."))
+
+            if not os.path.exists(self.model_path):
+                raise FileNotFoundError("No trained model found. Please train a model first.")
+
+            clf, le = load(self.model_path)
             if processed_df.empty:
                 self.master.after(0, lambda: messagebox.showwarning("No Data", "No data available for prediction."))
                 self.master.after(0, lambda: self.update_status("Idle"))
                 return
-            feature_cols = [c for c in processed_df.columns if c not in ['Label_Tag', 'Predicted_Label', 'Real_Time']]
+
+            # Identify feature columns (excluding ground truth and prediction columns).
+            feature_cols = [c for c in processed_df.columns if c not in ['Label_Tag', 'Predicted_Data', 'Real_Time']]
+            if not feature_cols:
+                raise ValueError("No feature columns found in the processed DataFrame.")
+
             X_pred = processed_df[feature_cols]
             y_pred_numeric = clf.predict(X_pred)
             predictions = le.inverse_transform(y_pred_numeric)
-            processed_df['Predicted_Label'] = predictions
-            if 'Label_Tag' in processed_df.columns:
+            # Create a new column 'Predicted_Data' with the predictions.
+            processed_df['Predicted_Data'] = predictions
+
+            # Compute metrics using the ground truth labels if available.
+            if 'Label_Tag' in processed_df.columns and processed_df['Label_Tag'].notna().all():
                 try:
-                    y_true_text = processed_df['Label_Tag']
-                    y_true_numeric = le.transform(y_true_text)
-                    acc = accuracy_score(y_true_numeric, y_pred_numeric)
-                    y_true_inversed = le.inverse_transform(y_true_numeric)
-                    class_report = classification_report(y_true_inversed, predictions, zero_division=0)
-                    cm = confusion_matrix(y_true_inversed, predictions, labels=le.classes_)
-                    if not self.model_metrics:
-                        self.model_metrics = {}
-                    self.model_metrics['accuracy'] = acc
-                    self.model_metrics['report'] = class_report
-                    self.model_metrics['cm'] = cm
+                    if processed_df['Label_Tag'].nunique() > 0:
+                        # Strip extra whitespace for consistency.
+                        y_true_text = processed_df['Label_Tag'].astype(str).str.strip()
+                        y_true_numeric = le.transform(y_true_text)
+                        acc = accuracy_score(y_true_numeric, y_pred_numeric)
+                        y_true_inversed = le.inverse_transform(y_true_numeric)
+                        class_report = classification_report(y_true_inversed, predictions, zero_division=0)
+                        cm = confusion_matrix(y_true_inversed, predictions, labels=le.classes_)
+
+                        self.model_metrics = {
+                            "accuracy": acc,
+                            "report": class_report,
+                            "cm": cm,
+                            "trained_on": os.path.basename(self.processed_file_predict.get())
+                        }
+                        self.save_metrics_to_file(self.model_metrics)
+                    else:
+                        raise ValueError("No ground truth labels available for metric computation.")
+                except Exception as e:
+                    print("Metrics computation error:", e)
+                    self.model_metrics = {
+                        "accuracy": None,
+                        "report": "No ground truth labels provided or error computing metrics.",
+                        "cm": None,
+                        "trained_on": os.path.basename(self.processed_file_predict.get())
+                    }
                     self.save_metrics_to_file(self.model_metrics)
-                    self.master.after(0, lambda: self.show_metrics_button.config(state=tk.NORMAL))
-                except Exception:
-                    pass
-            save_path = filedialog.asksaveasfilename(
-                title="Save Predictions",
-                defaultextension=".csv",
-                filetypes=(("CSV Files", "*.csv"), ("All Files", "*.*"))
-            )
-            if save_path:
-                processed_df.to_csv(save_path, index=False)
-                self.master.after(0, lambda: messagebox.showinfo("Success", f"Predictions saved to {save_path}"))
             else:
-                self.master.after(0, lambda: messagebox.showinfo("Cancelled", "Save operation cancelled."))
+                self.model_metrics = {
+                    "accuracy": None,
+                    "report": "No ground truth labels provided for metric computation.",
+                    "cm": None,
+                    "trained_on": os.path.basename(self.processed_file_predict.get())
+                }
+                self.save_metrics_to_file(self.model_metrics)
+
+            self.master.after(0, lambda: self.show_metrics_button.config(state=tk.NORMAL))
+
+            # Automatically save predictions to the processed file path.
+            save_path = self.processed_file_predict.get()
+            if not save_path:
+                raise ValueError("No processed file path available to save predictions.")
+            processed_df.to_csv(save_path, index=False)
+            self.master.after(0, lambda: messagebox.showinfo("Success", f"Predictions automatically saved to {save_path}"))
+
             self.master.after(0, lambda: self.predict_progress_bar.configure(value=100))
             self.master.after(0, lambda: self.update_status("Prediction complete!"))
         except Exception as e:
@@ -717,20 +789,51 @@ class ModelTrainerGUI:
 
     def display_metrics(self):
         """
-        Display saved model metrics (accuracy, classification report, confusion matrix) in a popup window.
+        Display saved model metrics (accuracy, classification report, confusion matrix)
+        in a popup window and also save them into model_metrics.json in the same directory as this script.
         """
         if not self.model_metrics:
             messagebox.showwarning("No Metrics", "No metrics found. Make a prediction first.")
             return
+
+        metrics_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model_metrics.json")
+        try:
+            with open(metrics_file, "w") as f:
+                serializable_metrics = {}
+                for key, value in self.model_metrics.items():
+                    if isinstance(value, np.ndarray):
+                        serializable_metrics[key] = value.tolist()
+                    else:
+                        serializable_metrics[key] = value
+                json.dump(serializable_metrics, f, indent=4)
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not save metrics to file: {e}")
+            return
+
         acc = self.model_metrics.get('accuracy', None)
         class_report = self.model_metrics.get('report', None)
         cm = self.model_metrics.get('cm', None)
-        if (acc is None) or (class_report is None) or (cm is None):
-            trained_on = self.model_metrics.get('trained_on', "Unknown file")
+        trained_on = self.model_metrics.get('trained_on', "Unknown file")
+        if acc is None and (class_report is None or cm is None):
             simple_message = f"Model was trained on: {trained_on}\nNo prediction metrics available."
             messagebox.showinfo("Metrics", simple_message)
             return
-        self.show_results_popup(acc, class_report, cm, title="Prediction Metrics")
+
+        popup = tk.Toplevel(self.master)
+        popup.title("Prediction Metrics")
+        popup.geometry("800x600")
+        txt = scrolledtext.ScrolledText(popup, width=100, height=30)
+        txt.pack(padx=10, pady=10, fill="both", expand=True)
+        txt.insert(tk.END, f"Model trained on: {trained_on}\n\n")
+        if acc is not None:
+            txt.insert(tk.END, f"Accuracy: {acc:.4f}\n\n")
+        else:
+            txt.insert(tk.END, "Accuracy: N/A\n\n")
+        txt.insert(tk.END, "Classification Report:\n")
+        txt.insert(tk.END, str(class_report) + "\n")
+        txt.insert(tk.END, "Confusion Matrix:\n")
+        txt.insert(tk.END, str(cm) + "\n")
+        txt.config(state="disabled")
 
     def show_results_popup(self, accuracy, class_report, cm, title="Results"):
         """
