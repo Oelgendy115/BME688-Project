@@ -1,17 +1,17 @@
 {
-    "trained_on": "14_01_2025_air_vs_malondealdehyde.csv",
+    "trained_on": "tea_coffee_test_25_03_2025_pro.csv",
     "label_info": {
         "Air": {
-            "total_windows": 628
+            "total_windows": 700
         },
-        "Melon_0.025": {
-            "total_windows": 639
+        "coffee": {
+            "total_windows": 527
         },
-        "Melon_0.250": {
-            "total_windows": 645
+        "coffee_2": {
+            "total_windows": 484
         },
-        "airr": {
-            "total_windows": 607
+        "tea": {
+            "total_windows": 484
         }
     }
 }

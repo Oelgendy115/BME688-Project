@@ -60,14 +60,14 @@ The installer script (`install.py`) will:
   Open Command Prompt or PowerShell, navigate to the project root (`BME688-Project`), and run:
   
   ```
-  python install.py
+  python Install.py
   ```
 
 - **On macOS/Linux:**  
   Open Terminal, navigate to the project root, and run:
   
   ```
-  python3 install.py
+  python3 Install.py
   ```
 
 The installer will guide you through each step. Follow the on-screen prompts to complete the setup.
