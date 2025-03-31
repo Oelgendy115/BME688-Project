@@ -91,3 +91,8 @@ After installation:
 - The installer sets the working directory to the project root automatically, so the relative paths will work correctly on both Windows and macOS.
 
 Enjoy using the BME688 Project!
+
+**Author**: Omar Elgendy  
+**Affiliation**: Carleton University  
+**Date**: March 2025  
+**Supervisor**: Dr. Adrain Chan

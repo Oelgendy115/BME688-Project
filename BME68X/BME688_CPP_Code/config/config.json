@@ -197,7 +197,7 @@
       {
         "id": "duty_1",
         "numberScanningCycles": 1,
-        "numberSleepingCycles": 0
+        "numberSleepingCycles": 10
       }
     ],
     "sensorConfigurations": [
