@@ -92,7 +92,3 @@ After installation:
 
 Enjoy using the BME688 Project!
 
-**Author**: Omar Elgendy  
-**Affiliation**: Carleton University  
-**Date**: March 2025  
-**Supervisor**: Dr. Adrain Chan
