@@ -90,5 +90,8 @@ After installation:
 - If you need to update dependencies later, simply re-run the installer.
 - The installer sets the working directory to the project root automatically, so the relative paths will work correctly on both Windows and macOS.
 
-Enjoy using the BME688 Project!
+## 6. Disclaimer
 
+This project was developed as part of a student initiative and may contain limitations, incomplete features, or unintentional errors. While every effort has been made to ensure functionality and clarity, users are encouraged to review the code and adapt it to their specific needs where necessary. Feedback and suggestions are always welcome!
+
+Enjoy using the BME688 Project!
