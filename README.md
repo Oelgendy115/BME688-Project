@@ -9,7 +9,7 @@ To get started, you can either clone the repository using Git or download it as 
 - **Clone via Git:**  
   Open your Terminal (or Git Bash on Windows) and run:
   
-  git clone https://github.com/yourusername/BME688-Project.git
+  git clone https://github.com/Oelgendy115/BME688-Project
   
   This will create a folder named "BME688-Project" containing all the project files.
 
@@ -43,7 +43,7 @@ BME688-Project/
 The installer script (`install.py`) will:
 
 1. **Install Dependencies:**  
-   It checks for `BME68X/requirements.txt` (if available) and installs the required Python packages. If not found, it will install a default set of dependencies.
+   It checks for `BME68X/requirements.txt` and installs the required Python packages. If not found, it will install a default set of dependencies.
 
 2. **Configure Firmware:**  
    It writes a hard-coded `platformio.ini` file into the `BME68X/BME688_CPP_Code` directory. The configuration is automatically selected based on your operating system. If you choose to build and upload the firmware, the installer will list available serial ports, let you select one, and update the configuration accordingly.
