@@ -95,3 +95,6 @@ After installation:
 This project was developed as part of a student initiative and may contain limitations, incomplete features, or unintentional errors. While every effort has been made to ensure functionality and clarity, users are encouraged to review the code and adapt it to their specific needs where necessary. Feedback and suggestions are always welcome!
 
 Enjoy using the BME688 Project!
+
+
+CREATE A CONCENTRATION TIME GRAPH AND CALUCLATE THE AREA UNDER THE CURVE.

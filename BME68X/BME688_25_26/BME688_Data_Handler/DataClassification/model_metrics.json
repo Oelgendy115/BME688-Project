@@ -1,0 +1,17 @@
+{
+    "trained_on": "out4.csv",
+    "label_info": {
+        "Air": {
+            "total_windows": 1229
+        },
+        "Ethanol": {
+            "total_windows": 1205
+        },
+        "Melon_250": {
+            "total_windows": 1219
+        },
+        "coffee_2": {
+            "total_windows": 1204
+        }
+    }
+}
